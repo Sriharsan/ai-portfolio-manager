@@ -42,8 +42,8 @@ def safe_import():
     try:
         # Import enhanced modules
         sys.path.insert(0, str(Path(__file__).parent))
-        from enhanced_market_data import market_data_provider
-        from institutional_portfolio_builder import InstitutionalPortfolioBuilder
+        from data.market_data import market_data
+        from models.portfolio_optimizer import portfolio_optimizer
         from config import config
         from data.data_loader import data_loader
         from visualization.charts import chart_generator

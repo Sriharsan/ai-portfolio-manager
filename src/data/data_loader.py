@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 
 # Import core modules
-from data.market_data import market_data
+from data.market_data import market_data_provider
 from models.llm_engine import llm_engine
 from analytics.performance import performance_analyzer
 from models.risk_manager import risk_manager
@@ -39,7 +39,7 @@ class DataLoader:
         
         try:
             # Get market data
-            stock_data, portfolio_returns = market_data.get_portfolio_data(
+            stock_data, portfolio_returns = market_data_provider.get_portfolio_data(
                 portfolio_weights, period
             )
             
@@ -81,7 +81,7 @@ class DataLoader:
         
         try:
             # Get stock data
-            stock_data = market_data.get_stock_data(symbol, period)
+            stock_data = market_data_provider.get_stock_data(symbol, period)
             
             # Performance analysis
             returns = stock_data['Daily_Return']

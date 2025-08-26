@@ -44,7 +44,7 @@ def safe_import():
         sys.path.insert(0, str(Path(__file__).parent))
         from src.data.market_data import market_data_provider
         from src.models.portfolio_optimizer import InstitutionalPortfolioBuilder
-        import config
+        from config import config
         from src.data.data_loader import data_loader
         from src.visualization.charts import chart_generator
         from src.visualization.dashboards import dashboard

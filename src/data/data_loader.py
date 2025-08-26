@@ -57,7 +57,11 @@ class DataLoader:
                 if symbol in stock_data
             }).dropna()
             
-            optimization_result = optimizer.optimize_portfolio(returns_df) if len(returns_df) > 0 else None
+            if len(returns_df) > 0:
+                portfolio_builder = InstitutionalPortfolioBuilder(market_data_provider)
+                optimization_result = portfolio_builder.build_portfolio_from_template('balanced')
+            else:
+                optimization_result = None            
             
             # AI insights
             ai_summary = llm_engine.generate_portfolio_summary(stock_data, portfolio_weights)

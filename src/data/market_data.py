@@ -217,6 +217,20 @@ class InstitutionalMarketDataProvider:
         # Fallback to yfinance
         return self._get_yfinance_data(symbol, period, interval)
     
+    def get_stock_data(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
+        """
+        Get stock data - alias for get_stock_data_premium for compatibility
+
+        Args:
+            symbol: Stock symbol
+            period: Data period 
+            interval: Data interval
+    
+        Returns:
+           Stock data DataFrame
+        """
+        return self.get_stock_data_premium(symbol, period, interval)
+    
     def _get_yfinance_data(self, symbol: str, period: str, interval: str) -> pd.DataFrame:
         """Fallback to yfinance with enhanced error handling"""
         

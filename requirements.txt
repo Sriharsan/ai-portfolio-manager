@@ -42,7 +42,6 @@ uvicorn>=0.23.0
 
 # Database & Storage
 sqlalchemy>=2.0.0
-sqlite3  # Built-in
 
 # Utilities
 python-dotenv>=1.0.0

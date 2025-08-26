@@ -526,3 +526,6 @@ def create_institutional_portfolio(template_name: str = 'balanced',
     portfolio = builder.build_portfolio_from_template(template_name)
     
     return portfolio
+
+
+optimizer = InstitutionalPortfolioBuilder(market_data_provider)

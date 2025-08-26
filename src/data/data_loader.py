@@ -13,7 +13,7 @@ from data.market_data import market_data_provider
 from models.llm_engine import llm_engine
 from analytics.performance import performance_analyzer
 from models.risk_manager import risk_manager
-from models.portfolio_optimizer import optimizer
+from models.portfolio_optimizer import InstitutionalPortfolioBuilder
 
 class DataLoader:
     """Unified data access interface"""

@@ -505,6 +505,103 @@ class InstitutionalMarketDataProvider:
             time.sleep(self.min_call_interval - time_since_last_call)
         
         self.last_call_time = time.time()
+        
+    def get_portfolio_data(self, portfolio_weights: Dict[str, float], period: str = '1y') -> Tuple[Dict[str, pd.DataFrame], pd.DataFrame]:
+        """
+        Get portfolio data for multiple symbols
+
+        Args:
+            portfolio_weights: Dictionary of symbol -> weight
+            period: Data period
+
+        Returns:
+            Tuple of (individual stock data dict, portfolio returns dataframe)
+        """
+    
+        stock_data = {}
+        portfolio_returns_data = []
+    
+        # Get data for each symbol
+        for symbol in portfolio_weights.keys():
+            try:
+                data = self.get_stock_data_premium(symbol, period)
+                if not data.empty:
+                    stock_data[symbol] = data
+                    logger.info(f"Retrieved {len(data)} records for {symbol}")
+                else:
+                    logger.warning(f"No data retrieved for {symbol}")
+            except Exception as e:
+                logger.error(f"Failed to get data for {symbol}: {e}")
+                continue
+    
+        # Calculate portfolio returns if we have stock data
+        if stock_data:
+            try:
+                portfolio_returns = self._calculate_portfolio_returns(stock_data, portfolio_weights)
+                return stock_data, portfolio_returns
+            except Exception as e:
+                logger.error(f"Portfolio calculation failed: {e}")
+                return stock_data, pd.DataFrame()
+
+        return {}, pd.DataFrame()
+
+    def _calculate_portfolio_returns(self, stock_data: Dict[str, pd.DataFrame], 
+                                   weights: Dict[str, float]) -> pd.DataFrame:
+        """Calculate weighted portfolio returns"""
+
+        # Get all dates that appear in any stock
+        all_dates = set()
+        for data in stock_data.values():
+            all_dates.update(data.index)
+
+        all_dates = sorted(list(all_dates))
+
+        if not all_dates:
+            return pd.DataFrame()
+
+        # Create portfolio returns dataframe
+        portfolio_data = pd.DataFrame(index=all_dates)
+
+        # Calculate daily portfolio returns
+        daily_returns = []
+        portfolio_values = []
+
+        for date in all_dates:
+            daily_return = 0
+            total_weight = 0
+
+            for symbol, weight in weights.items():
+                if symbol in stock_data:
+                    symbol_data = stock_data[symbol]
+                    if date in symbol_data.index and 'Daily_Return' in symbol_data.columns:
+                        symbol_return = symbol_data.loc[date, 'Daily_Return']
+                        if not pd.isna(symbol_return):
+                            daily_return += weight * symbol_return
+                            total_weight += weight
+
+            # Normalize by actual weight (in case some stocks missing data)
+            if total_weight > 0:
+                daily_return = daily_return / total_weight
+
+            daily_returns.append(daily_return)
+
+        # Add to dataframe
+        portfolio_data['Daily_Return'] = daily_returns
+        portfolio_data['Cumulative_Return'] = (1 + portfolio_data['Daily_Return']).cumprod() - 1
+
+        # Add portfolio value (assuming $100k starting value)
+        starting_value = 100000
+        portfolio_data['Portfolio_Value'] = starting_value * (1 + portfolio_data['Cumulative_Return'])
+
+        # Add rolling volatility
+        if len(portfolio_data) >= 30:
+            portfolio_data['Volatility_30d'] = portfolio_data['Daily_Return'].rolling(30).std() * np.sqrt(252)
+
+        # Add drawdown
+        running_max = portfolio_data['Cumulative_Return'].cummax()
+        portfolio_data['Drawdown'] = (portfolio_data['Cumulative_Return'] - running_max) / (1 + running_max)
+
+        return portfolio_data.dropna()
 
 # Global instance
 market_data_provider = InstitutionalMarketDataProvider()

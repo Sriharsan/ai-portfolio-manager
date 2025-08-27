@@ -63,7 +63,7 @@ redis>=4.6.0
 # Advanced analytics
 arch>=6.2.0
 statsmodels>=0.14.0
-pyfolio-reloaded>=0.9.4
+pyfolio-reloaded>=0.9.9
 
 # Power BI Integration (Optional - for advanced features)
 azure-storage-blob>=12.17.0

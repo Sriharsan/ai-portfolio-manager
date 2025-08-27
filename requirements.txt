@@ -9,7 +9,7 @@ transformers>=4.33.0
 huggingface-hub>=0.16.0
 sentence-transformers>=2.2.0
 tensorflow>=2.13.0
-torch-audio>=2.0.0
+#torch-audio>=2.0.0
 openai>=0.28.0
 langchain>=0.0.300
 

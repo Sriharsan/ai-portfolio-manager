@@ -1,19 +1,19 @@
 # Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.11.0
-pytest-asyncio>=0.21.0
+pytest>=7.4,<9
+pytest-cov>=4.1,<7
+pytest-mock>=3.11,<4
+pytest-asyncio>=0.21,<2
 
 # Code Quality
-black>=23.7.0
-flake8>=6.0.0
-mypy>=1.5.0
-pre-commit>=3.3.0
+black>=23.7,<26
+flake8>=6.0,<8
+mypy>=1.5,<2
+pre-commit>=3.3,<5
 
 # Documentation
-sphinx>=7.0.0
-mkdocs>=1.5.0
+sphinx>=7.0,<8     # stays before Sphinx 8 (avoids docutils 0.21.x conflicts)
+mkdocs>=1.5,<2
 
 # Jupyter
-jupyter>=1.0.0
-ipykernel>=6.25.0
+jupyter>=1.0,<2
+ipykernel>=6.25,<7

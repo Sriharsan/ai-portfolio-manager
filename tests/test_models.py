@@ -1,6 +1,4 @@
-"""
-Test Suite - Core Models Testing
-"""
+# tests/test_models.py
 
 import pytest
 import sys
@@ -17,7 +15,6 @@ import pandas as pd
 import numpy as np
 
 def test_portfolio_optimizer():
-    """Test portfolio optimization"""
     
     # Generate sample return data
     dates = pd.date_range('2023-01-01', periods=100)
@@ -35,7 +32,6 @@ def test_portfolio_optimizer():
     assert result['optimization_success']
 
 def test_risk_manager():
-    """Test risk calculations"""
     
     returns = pd.Series(np.random.normal(0.001, 0.02, 1000))
     metrics = risk_manager.portfolio_risk_metrics(returns)
@@ -45,7 +41,6 @@ def test_risk_manager():
     assert metrics['var_1d_95'] < 0  # VaR should be negative
 
 def test_sentiment_analyzer():
-    """Test sentiment analysis"""
     
     positive_text = "Strong earnings beat expectations with bullish outlook"
     negative_text = "Declining revenue amid bearish market conditions"
@@ -57,7 +52,6 @@ def test_sentiment_analyzer():
     assert neg_result['label'] == 'negative'
 
 def test_performance_analyzer():
-    """Test performance calculations"""
     
     returns = pd.Series(np.random.normal(0.001, 0.02, 252))
     metrics = performance_analyzer.calculate_metrics(returns)

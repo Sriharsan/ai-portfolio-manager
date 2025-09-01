@@ -1,7 +1,4 @@
-"""
-Institutional Portfolio Builder - BlackRock-Level Portfolio Construction
-Advanced portfolio templates and asset allocation strategies
-"""
+# src/models/portfolio_optimizer.py
 
 import pandas as pd
 import numpy as np
@@ -12,7 +9,6 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 class InstitutionalPortfolioBuilder:
-    """Build institutional-grade diversified portfolios"""
     
     def __init__(self, market_data_provider):
         self.market_data = market_data_provider
@@ -22,7 +18,6 @@ class InstitutionalPortfolioBuilder:
         self.portfolio_templates = self._create_portfolio_templates()
         
     def _create_portfolio_templates(self) -> Dict[str, Dict]:
-        """Create institutional portfolio templates"""
         
         templates = {
             'conservative': {
@@ -137,7 +132,6 @@ class InstitutionalPortfolioBuilder:
     
     def build_portfolio_from_template(self, template_name: str, 
                                     customizations: Optional[Dict] = None) -> Dict[str, float]:
-        """Build portfolio from institutional template"""
         
         if template_name not in self.portfolio_templates:
             raise ValueError(f"Unknown template: {template_name}")
@@ -156,7 +150,6 @@ class InstitutionalPortfolioBuilder:
         return portfolio
     
     def _map_allocation_to_symbols(self, allocation: Dict[str, float]) -> Dict[str, float]:
-        """Map allocation categories to specific symbols"""
         
         category_mappings = {
             'bonds': {
@@ -293,7 +286,6 @@ class InstitutionalPortfolioBuilder:
         return portfolio
     
     def create_sector_rotation_portfolio(self, momentum_lookback: int = 60) -> Dict[str, float]:
-        """Create momentum-based sector rotation portfolio"""
         
         sector_etfs = ['XLK', 'XLF', 'XLV', 'XLE', 'XLY', 'XLP', 'XLI', 'XLU', 'XLRE', 'XLB']
         
@@ -329,7 +321,6 @@ class InstitutionalPortfolioBuilder:
         return portfolio
     
     def create_risk_parity_portfolio(self, symbols: List[str]) -> Dict[str, float]:
-        """Create risk parity portfolio (equal risk contribution)"""
         
         if len(symbols) < 2:
             return {symbol: 1.0/len(symbols) for symbol in symbols}
@@ -385,7 +376,6 @@ class InstitutionalPortfolioBuilder:
         return risk_parity_weights
     
     def create_smart_beta_portfolio(self, universe_filter: Optional[Dict] = None) -> Dict[str, float]:
-        """Create smart beta portfolio using factor tilts"""
         
         # Get equity universe
         equity_symbols = self.market_data.get_available_assets(
@@ -426,7 +416,6 @@ class InstitutionalPortfolioBuilder:
         return portfolio
     
     def _calculate_smart_beta_score(self, data: pd.DataFrame) -> Optional[float]:
-        """Calculate smart beta factor score"""
         
         try:
             returns = data['Daily_Return'].dropna()
@@ -455,7 +444,6 @@ class InstitutionalPortfolioBuilder:
     def get_portfolio_recommendations(self, risk_tolerance: str, 
                                    investment_horizon: str,
                                    income_focus: bool = False) -> List[Dict]:
-        """Get portfolio recommendations based on preferences"""
         
         recommendations = []
         
@@ -517,7 +505,6 @@ class InstitutionalPortfolioBuilder:
 # Usage example function
 def create_institutional_portfolio(template_name: str = 'balanced',
                                  market_data_provider=None) -> Dict[str, float]:
-    """Create an institutional-grade portfolio"""
     
     if market_data_provider is None:
         from enhanced_market_data import market_data_provider

@@ -1,6 +1,4 @@
-"""
-Logger Configuration - Centralized Logging
-"""
+# src/utils/logger.py
 
 import logging
 import sys
@@ -8,7 +6,6 @@ from pathlib import Path
 from datetime import datetime
 
 def setup_logger(name: str = "portfolio_manager", level: str = "INFO") -> logging.Logger:
-    """Setup centralized logging"""
     
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))

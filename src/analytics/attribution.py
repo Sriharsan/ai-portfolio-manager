@@ -1,19 +1,13 @@
-"""
-Performance Attribution Analysis
-Analyze sources of portfolio returns
-"""
-
+# src/analytics/attribution.py
 import pandas as pd
 import numpy as np
 from typing import Dict, Tuple
 
 class AttributionAnalyzer:
-    """Portfolio performance attribution"""
     
     def sector_attribution(self, portfolio_returns: Dict[str, pd.Series], 
                           weights: Dict[str, float], 
                           benchmark_returns: pd.Series) -> Dict:
-        """Calculate sector-based performance attribution"""
         
         # Simplified attribution analysis
         results = {}
@@ -36,7 +30,6 @@ class AttributionAnalyzer:
         return results
     
     def style_attribution(self, returns: pd.DataFrame) -> Dict:
-        """Analyze style factors (growth vs value, size)"""
         
         # Simplified style analysis
         volatility = returns.std() * np.sqrt(252)

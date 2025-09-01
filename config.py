@@ -1,7 +1,4 @@
-"""
-AI Portfolio Management System - Configuration
-Fixed for production deployment
-"""
+# config.py
 
 import os
 from pathlib import Path
@@ -47,7 +44,6 @@ class Config:
     
     @classmethod
     def validate_config(cls):
-        """Validate configuration and return warnings"""
         warnings = []
         
         if not cls.ALPHA_VANTAGE_API_KEY:
@@ -63,7 +59,6 @@ class Config:
     
     @classmethod 
     def get_api_status(cls):
-        """Get API availability status"""
         return {
             "alpha_vantage": bool(cls.ALPHA_VANTAGE_API_KEY),
             "fred": bool(cls.FRED_API_KEY),

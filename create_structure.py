@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
-"""
-Create the EXACT directory structure from your documentation
-Following your specified architecture
-"""
+# create_structure.py
 
 import os
 from pathlib import Path
 
 def create_directory_structure():
-    """Create the exact directory structure from your documentation"""
     
-    # Your exact structure from the documentation
     structure = {
         # Root files
         "": [
@@ -23,7 +18,6 @@ def create_directory_structure():
             ".gitignore"
         ],
         
-        # Source code structure (exactly as you specified)
         "src": ["__init__.py"],
         "src/data": [
             "__init__.py",

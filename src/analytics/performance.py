@@ -1,8 +1,4 @@
-"""
-Portfolio Performance Analytics - Core Metrics Calculation
-Efficient computation of key performance indicators
-"""
-
+# src/analytics/performance.py
 import pandas as pd
 import numpy as np
 from typing import Dict, Optional, Tuple
@@ -10,7 +6,6 @@ import logging
 from datetime import datetime
 
 class PerformanceAnalyzer:
-    """Optimized portfolio performance analytics"""
     
     def __init__(self, risk_free_rate: float = 0.02):
         self.risk_free_rate = risk_free_rate
@@ -18,17 +13,7 @@ class PerformanceAnalyzer:
         self.logger = logging.getLogger(__name__)
     
     def calculate_metrics(self, returns: pd.Series, benchmark: Optional[pd.Series] = None) -> Dict:
-        """
-        Calculate comprehensive performance metrics
-        
-        Args:
-            returns: Portfolio returns series
-            benchmark: Benchmark returns (optional)
-        
-        Returns:
-            Dictionary of performance metrics
-        """
-        
+
         # Remove NaN values
         returns = returns.dropna()
         
@@ -79,7 +64,6 @@ class PerformanceAnalyzer:
         return metrics
     
     def _calculate_beta(self, returns: pd.Series, benchmark: pd.Series) -> float:
-        """Calculate portfolio beta vs benchmark"""
         
         aligned_data = pd.DataFrame({'portfolio': returns, 'benchmark': benchmark}).dropna()
         
@@ -92,7 +76,6 @@ class PerformanceAnalyzer:
         return covariance / benchmark_variance if benchmark_variance > 0 else 1.0
     
     def rolling_metrics(self, returns: pd.Series, window: int = 252) -> pd.DataFrame:
-        """Calculate rolling performance metrics"""
         
         rolling_data = pd.DataFrame(index=returns.index)
         rolling_data['rolling_return'] = returns.rolling(window).apply(lambda x: (1 + x).prod() - 1)

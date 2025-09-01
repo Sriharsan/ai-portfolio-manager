@@ -1,6 +1,4 @@
-"""
-Test Suite for Visualization Module
-"""
+# tests/test_visualization.py
 
 import pytest
 import sys
@@ -16,10 +14,8 @@ from visualization.charts import chart_generator
 from visualization.dashboards import dashboard
 
 class TestVisualization:
-    """Test visualization functionality"""
     
     def setup_method(self):
-        """Setup test data"""
         dates = pd.date_range('2023-01-01', periods=100)
         self.test_data = pd.DataFrame({
             'Daily_Return': np.random.normal(0.001, 0.02, 100),
@@ -30,7 +26,6 @@ class TestVisualization:
         self.portfolio_weights = {'AAPL': 0.4, 'MSFT': 0.3, 'GOOGL': 0.3}
     
     def test_performance_chart(self):
-        """Test performance chart creation"""
         fig = chart_generator.create_performance_chart(self.test_data)
         
         assert isinstance(fig, go.Figure)
@@ -38,14 +33,12 @@ class TestVisualization:
         assert fig.layout.title.text is not None
     
     def test_allocation_pie_chart(self):
-        """Test allocation pie chart"""
         fig = chart_generator.create_allocation_pie(self.portfolio_weights)
         
         assert isinstance(fig, go.Figure)
         assert len(fig.data) > 0
     
     def test_risk_metrics_bar_chart(self):
-        """Test risk metrics bar chart"""
         metrics = {
             'var_1d_95': -2000,
             'cvar_1d_95': -2500,
@@ -59,7 +52,6 @@ class TestVisualization:
         assert len(fig.data) > 0
     
     def test_correlation_heatmap(self):
-        """Test correlation heatmap"""
         returns_data = {
             'AAPL': pd.Series(np.random.normal(0.001, 0.02, 100)),
             'MSFT': pd.Series(np.random.normal(0.0008, 0.018, 100)),
@@ -72,7 +64,6 @@ class TestVisualization:
         assert len(fig.data) > 0
     
     def test_portfolio_comparison_chart(self):
-        """Test portfolio comparison chart"""
         portfolios = {
             'Portfolio A': self.test_data,
             'Portfolio B': self.test_data * 1.1  # Slightly different performance
@@ -84,7 +75,6 @@ class TestVisualization:
         assert len(fig.data) == 2  # Should have two traces
     
     def test_drawdown_chart(self):
-        """Test drawdown chart"""
         returns = self.test_data['Daily_Return']
         
         fig = dashboard.drawdown_chart(returns)
@@ -93,14 +83,12 @@ class TestVisualization:
         assert len(fig.data) > 0
     
     def test_gauge_chart(self):
-        """Test gauge chart creation"""
         fig = dashboard.create_gauge_chart(75, "Risk Score", 0, 100)
         
         assert isinstance(fig, go.Figure)
         assert len(fig.data) > 0
     
     def test_empty_data_handling(self):
-        """Test handling of empty data"""
         empty_data = pd.DataFrame()
         
         # Should not raise exceptions
@@ -108,7 +96,7 @@ class TestVisualization:
         assert isinstance(fig, go.Figure)
 
 if __name__ == "__main__":
-    # Run tests
+
     test_viz = TestVisualization()
     test_viz.setup_method()
     

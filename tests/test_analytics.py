@@ -1,6 +1,4 @@
-"""
-Test Suite for Analytics Module
-"""
+# tests/test_analytics.py
 
 import pytest
 import sys
@@ -16,10 +14,8 @@ from analytics.attribution import attribution_analyzer
 from analytics.reporting import report_generator
 
 class TestAnalytics:
-    """Test analytics functionality"""
     
     def setup_method(self):
-        """Setup test data"""
         np.random.seed(42)
         self.returns = pd.Series(
             np.random.normal(0.001, 0.02, 252),
@@ -31,7 +27,6 @@ class TestAnalytics:
         )
     
     def test_performance_metrics(self):
-        """Test performance metrics calculation"""
         metrics = performance_analyzer.calculate_metrics(self.returns)
         
         assert 'total_return' in metrics
@@ -45,7 +40,6 @@ class TestAnalytics:
         assert 0 <= metrics['volatility'] <= 1
     
     def test_performance_with_benchmark(self):
-        """Test performance metrics with benchmark"""
         metrics = performance_analyzer.calculate_metrics(self.returns, self.benchmark)
         
         assert 'benchmark_return' in metrics
@@ -54,7 +48,6 @@ class TestAnalytics:
         assert 'information_ratio' in metrics
     
     def test_rolling_metrics(self):
-        """Test rolling metrics calculation"""
         rolling_data = performance_analyzer.rolling_metrics(self.returns, window=60)
         
         assert len(rolling_data) > 0
@@ -62,7 +55,6 @@ class TestAnalytics:
         assert 'rolling_sharpe' in rolling_data.columns
     
     def test_attribution_analysis(self):
-        """Test attribution analysis"""
         portfolio_returns = {
             'AAPL': self.returns,
             'MSFT': self.returns * 1.1
@@ -78,7 +70,6 @@ class TestAnalytics:
         assert 'MSFT' in attribution
     
     def test_report_generation(self):
-        """Test report generation"""
         analysis_data = {
             'performance_metrics': {
                 'total_return': 0.15,
@@ -98,7 +89,6 @@ class TestAnalytics:
         assert '15.0%' in report  # Should contain formatted metrics
     
     def test_insufficient_data_handling(self):
-        """Test handling of insufficient data"""
         short_returns = pd.Series([0.01])
         
         metrics = performance_analyzer.calculate_metrics(short_returns)
@@ -106,7 +96,7 @@ class TestAnalytics:
         assert 'error' in metrics
 
 if __name__ == "__main__":
-    # Run tests
+
     test_analytics = TestAnalytics()
     test_analytics.setup_method()
     

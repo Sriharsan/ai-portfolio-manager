@@ -1,7 +1,4 @@
-"""
-Power BI Export Module
-Export portfolio data to Power BI compatible formats
-"""
+# src/visualization/power_bi_export.py
 
 import pandas as pd
 import json
@@ -11,7 +8,6 @@ import logging
 from pathlib import Path
 
 class PowerBIExporter:
-    """Export data for Power BI integration"""
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -20,7 +16,6 @@ class PowerBIExporter:
     
     def export_portfolio_data(self, portfolio_data: pd.DataFrame, 
                             filename: str = None) -> str:
-        """Export portfolio data to CSV for Power BI"""
         
         if filename is None:
             filename = f"portfolio_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
@@ -42,7 +37,6 @@ class PowerBIExporter:
     
     def export_performance_metrics(self, metrics: Dict, 
                                  filename: str = None) -> str:
-        """Export performance metrics as JSON"""
         
         if filename is None:
             filename = f"performance_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -64,7 +58,6 @@ class PowerBIExporter:
         return str(filepath)
     
     def create_powerbi_dataset_schema(self) -> Dict:
-        """Generate Power BI dataset schema"""
         
         schema = {
             "name": "AIPortfolioManager",
@@ -106,7 +99,6 @@ class PowerBIExporter:
     def export_holdings_data(self, portfolio_weights: Dict[str, float],
                            stock_data: Dict[str, pd.DataFrame],
                            filename: str = None) -> str:
-        """Export holdings data for Power BI"""
         
         if filename is None:
             filename = f"holdings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
@@ -133,7 +125,6 @@ class PowerBIExporter:
         return str(filepath)
     
     def create_power_bi_report_config(self) -> Dict:
-        """Generate Power BI report configuration"""
         
         config = {
             "version": "1.0",

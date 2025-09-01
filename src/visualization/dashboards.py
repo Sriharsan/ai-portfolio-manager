@@ -1,7 +1,4 @@
-"""
-Advanced Dashboard Components
-Interactive Streamlit components for portfolio analysis
-"""
+# src/visualization/dashboards.py
 
 import streamlit as st
 import plotly.graph_objects as go
@@ -11,7 +8,6 @@ import numpy as np
 from typing import Dict, List
 
 class AdvancedDashboard:
-    """Enhanced dashboard components"""
     
     def __init__(self):
         self.colors = {
@@ -22,7 +18,6 @@ class AdvancedDashboard:
         }
     
     def portfolio_comparison_chart(self, portfolios: Dict[str, pd.DataFrame]) -> go.Figure:
-        """Compare multiple portfolio performances"""
         fig = go.Figure()
         
         for name, data in portfolios.items():
@@ -46,7 +41,6 @@ class AdvancedDashboard:
         return fig
     
     def risk_return_scatter(self, data: List[Dict]) -> go.Figure:
-        """Risk-return scatter plot"""
         if not data:
             return go.Figure()
         
@@ -66,7 +60,6 @@ class AdvancedDashboard:
         return fig
     
     def asset_correlation_matrix(self, returns_data: pd.DataFrame) -> go.Figure:
-        """Interactive correlation heatmap"""
         corr = returns_data.corr()
         
         fig = go.Figure(data=go.Heatmap(
@@ -89,7 +82,6 @@ class AdvancedDashboard:
         return fig
     
     def drawdown_chart(self, returns: pd.Series) -> go.Figure:
-        """Portfolio drawdown visualization"""
         cumulative = (1 + returns).cumprod()
         rolling_max = cumulative.expanding().max()
         drawdown = (cumulative - rolling_max) / rolling_max
@@ -116,7 +108,6 @@ class AdvancedDashboard:
         return fig
     
     def sector_allocation_chart(self, allocations: Dict[str, float]) -> go.Figure:
-        """Enhanced sector allocation with drill-down"""
         fig = px.sunburst(
             values=list(allocations.values()),
             names=list(allocations.keys()),
@@ -127,7 +118,6 @@ class AdvancedDashboard:
         return fig
     
     def performance_metrics_table(self, metrics: Dict) -> None:
-        """Display performance metrics in formatted table"""
         
         col1, col2, col3 = st.columns(3)
         
@@ -163,7 +153,6 @@ class AdvancedDashboard:
             )
     
     def ai_insights_card(self, insights: str) -> None:
-        """Display AI insights in styled card"""
         st.markdown("""
         <div style="
             background-color: #f0f2f6;
@@ -179,7 +168,6 @@ class AdvancedDashboard:
     
     def create_gauge_chart(self, value: float, title: str, 
                           min_val: float = 0, max_val: float = 100) -> go.Figure:
-        """Create gauge chart for metrics like risk score"""
         
         fig = go.Figure(go.Indicator(
             mode = "gauge+number",

@@ -1,14 +1,10 @@
-"""
-Data Loader - Unified Data Access Interface
-Connects market data, LLM engine, and analytics
-"""
+# src/data/data_loader.py
 
 import pandas as pd
 from typing import Dict, List, Optional, Tuple
 import logging
 from datetime import datetime
 
-# Import core modules
 from data.market_data import market_data_provider
 from models.llm_engine import llm_engine
 from analytics.performance import performance_analyzer
@@ -16,7 +12,6 @@ from models.risk_manager import risk_manager
 from models.portfolio_optimizer import InstitutionalPortfolioBuilder
 
 class DataLoader:
-    """Unified data access interface"""
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -26,16 +21,6 @@ class DataLoader:
         portfolio_weights: Dict[str, float],
         period: str = '1y'
     ) -> Dict:
-        """
-        Get comprehensive portfolio analysis
-        
-        Args:
-            portfolio_weights: Portfolio allocation
-            period: Data period
-        
-        Returns:
-            Complete portfolio analysis
-        """
         
         try:
             # Get market data
@@ -81,7 +66,6 @@ class DataLoader:
             return {'error': str(e)}
     
     def get_stock_analysis(self, symbol: str, period: str = '6mo') -> Dict:
-        """Get individual stock analysis"""
         
         try:
             # Get stock data

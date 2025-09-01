@@ -1,7 +1,4 @@
-"""
-Optimized LLM Engine for Financial Analysis
-Reduced memory footprint with efficient AI models
-"""
+# src/models/llm_engine.py
 
 import pandas as pd
 import numpy as np
@@ -11,7 +8,6 @@ import re
 from pathlib import Path
 
 class OptimizedLLMEngine:
-    """Lightweight financial AI engine"""
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -19,7 +15,6 @@ class OptimizedLLMEngine:
         self._load_financial_context()
     
     def _setup_models(self):
-        """Initialize lightweight models"""
         try:
             # Try to load transformers for sentiment
             from transformers import pipeline
@@ -36,7 +31,6 @@ class OptimizedLLMEngine:
             self._setup_rule_based_models()
     
     def _setup_rule_based_models(self):
-        """Fallback to rule-based analysis"""
         self.positive_words = {
             'bullish', 'growth', 'profit', 'gain', 'strong', 'buy', 'upgrade',
             'beat', 'exceed', 'rally', 'surge', 'momentum', 'breakout'
@@ -47,7 +41,6 @@ class OptimizedLLMEngine:
         }
     
     def _load_financial_context(self):
-        """Load financial domain knowledge"""
         self.market_signals = {
             'bull': ['uptrend', 'breakout', 'support', 'momentum'],
             'bear': ['downtrend', 'breakdown', 'resistance', 'selling'],
@@ -55,7 +48,6 @@ class OptimizedLLMEngine:
         }
     
     def analyze_sentiment(self, text: str) -> Dict:
-        """Optimized sentiment analysis"""
         if not text:
             return {'label': 'neutral', 'score': 0.5}
         
@@ -73,7 +65,6 @@ class OptimizedLLMEngine:
             return self._rule_based_sentiment(text)
     
     def _rule_based_sentiment(self, text: str) -> Dict:
-        """Fast rule-based sentiment"""
         text_lower = text.lower()
         pos_count = sum(1 for word in self.positive_words if word in text_lower)
         neg_count = sum(1 for word in self.negative_words if word in text_lower)
@@ -91,7 +82,6 @@ class OptimizedLLMEngine:
             return {'label': 'neutral', 'score': 0.5, 'model': 'rule_based'}
     
     def generate_market_insight(self, stock_data: pd.DataFrame, symbol: str) -> str:
-        """Generate concise market insights"""
         try:
             analysis = self._analyze_stock_metrics(stock_data, symbol)
             return self._create_insight_text(analysis, symbol)
@@ -100,7 +90,6 @@ class OptimizedLLMEngine:
             return f"Market analysis for {symbol} is currently unavailable."
     
     def _analyze_stock_metrics(self, data: pd.DataFrame, symbol: str) -> Dict:
-        """Quick stock analysis"""
         if data.empty or len(data) < 2:
             return {'error': 'Insufficient data'}
         
@@ -130,7 +119,6 @@ class OptimizedLLMEngine:
         }
     
     def _create_insight_text(self, analysis: Dict, symbol: str) -> str:
-        """Create concise insight text"""
         if 'error' in analysis:
             return f"Unable to analyze {symbol} - insufficient data."
         
@@ -161,7 +149,6 @@ class OptimizedLLMEngine:
         return insight.strip()
     
     def generate_portfolio_summary(self, portfolio_data: Dict, weights: Dict) -> str:
-        """Generate portfolio-level insights"""
         try:
             holdings_perf = []
             
@@ -200,7 +187,6 @@ class OptimizedLLMEngine:
             return "Portfolio summary temporarily unavailable."
     
     def extract_financial_entities(self, text: str) -> List[Dict]:
-        """Extract financial entities using regex"""
         entities = []
         
         patterns = {

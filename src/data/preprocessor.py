@@ -1,16 +1,12 @@
-"""
-Data Preprocessor - Clean and prepare financial data
-"""
+# src/data/preprocessor.py
 
 import pandas as pd
 import numpy as np
 from typing import Dict, Optional
 
 class DataPreprocessor:
-    """Efficient data cleaning and preparation"""
     
     def clean_stock_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Clean stock price data"""
         
         # Remove rows with missing essential data
         data = data.dropna(subset=['Open', 'High', 'Low', 'Close', 'Volume'])
@@ -30,11 +26,9 @@ class DataPreprocessor:
         return data.drop('Returns', axis=1)
     
     def normalize_returns(self, returns: pd.Series) -> pd.Series:
-        """Normalize returns data"""
         return returns.fillna(0).clip(-0.2, 0.2)  # Cap extreme returns
     
     def prepare_optimization_data(self, stock_data: Dict[str, pd.DataFrame]) -> pd.DataFrame:
-        """Prepare data for portfolio optimization"""
         
         returns_dict = {}
         for symbol, data in stock_data.items():

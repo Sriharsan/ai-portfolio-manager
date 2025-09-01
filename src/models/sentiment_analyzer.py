@@ -1,7 +1,4 @@
-"""
-Sentiment Analyzer - Financial Text Analysis
-Optimized sentiment analysis for financial texts
-"""
+# src/models/sentiment_analyzer.py
 
 import pandas as pd
 import numpy as np
@@ -10,14 +7,12 @@ import re
 import logging
 
 class FinancialSentimentAnalyzer:
-    """Lightweight financial sentiment analysis"""
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self._load_sentiment_lexicons()
     
     def _load_sentiment_lexicons(self):
-        """Load financial sentiment word lists"""
         
         self.positive_words = {
             'bullish', 'growth', 'profit', 'gain', 'strong', 'buy', 'upgrade', 
@@ -38,15 +33,6 @@ class FinancialSentimentAnalyzer:
         }
     
     def analyze_sentiment(self, text: str) -> Dict[str, Union[str, float]]:
-        """
-        Analyze sentiment of financial text
-        
-        Args:
-            text: Input text
-        
-        Returns:
-            Sentiment analysis results
-        """
         
         if not text or len(text.strip()) == 0:
             return {'label': 'neutral', 'score': 0.5, 'confidence': 0.0}
@@ -101,7 +87,6 @@ class FinancialSentimentAnalyzer:
         return words
     
     def _calculate_sentiment_score(self, words: List[str], sentiment_words: set) -> float:
-        """Calculate weighted sentiment score"""
         
         score = 0
         for i, word in enumerate(words):
@@ -121,12 +106,10 @@ class FinancialSentimentAnalyzer:
         return score
     
     def batch_analyze(self, texts: List[str]) -> List[Dict]:
-        """Analyze multiple texts efficiently"""
         
         return [self.analyze_sentiment(text) for text in texts]
     
     def market_sentiment_score(self, news_texts: List[str]) -> Dict:
-        """Calculate overall market sentiment from news"""
         
         if not news_texts:
             return {'overall_sentiment': 'neutral', 'confidence': 0.0}

@@ -1,7 +1,4 @@
-"""
-Charts Module - Financial Visualization Components
-Optimized charting functions using Plotly
-"""
+# src/visualization/charts.py
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -10,7 +7,6 @@ import numpy as np
 from typing import Dict, List, Optional
 
 class ChartGenerator:
-    """Optimized financial chart generation"""
     
     def __init__(self):
         self.color_scheme = {
@@ -21,7 +17,6 @@ class ChartGenerator:
         }
     
     def create_performance_chart(self, data: pd.DataFrame, title: str = "Portfolio Performance") -> go.Figure:
-        """Create portfolio performance line chart"""
         
         fig = go.Figure()
         
@@ -45,7 +40,6 @@ class ChartGenerator:
         return fig
     
     def create_allocation_pie(self, weights: Dict[str, float]) -> go.Figure:
-        """Create portfolio allocation pie chart"""
         
         fig = px.pie(
             values=list(weights.values()),
@@ -59,7 +53,6 @@ class ChartGenerator:
         return fig
     
     def create_risk_metrics_bar(self, metrics: Dict) -> go.Figure:
-        """Create risk metrics bar chart"""
         
         risk_data = {
             'Metric': ['VaR (1-day)', 'CVaR (1-day)', 'Max Drawdown', 'Volatility'],
@@ -80,7 +73,6 @@ class ChartGenerator:
         return fig
     
     def create_correlation_heatmap(self, returns_data: Dict[str, pd.Series]) -> go.Figure:
-        """Create correlation heatmap"""
         
         # Create correlation matrix
         df = pd.DataFrame(returns_data)

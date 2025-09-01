@@ -1,6 +1,4 @@
-"""
-Utility Decorators for Performance and Error Handling
-"""
+# src/utils/decorators.py
 
 import time
 import functools
@@ -8,7 +6,6 @@ import logging
 from typing import Callable, Any
 
 def timing_decorator(func: Callable) -> Callable:
-    """Measure function execution time"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         start = time.time()
@@ -19,7 +16,6 @@ def timing_decorator(func: Callable) -> Callable:
     return wrapper
 
 def error_handler(default_return=None):
-    """Handle exceptions gracefully"""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -32,7 +28,6 @@ def error_handler(default_return=None):
     return decorator
 
 def cache_result(expiry_seconds: int = 3600):
-    """Simple result caching"""
     def decorator(func: Callable) -> Callable:
         cache = {}
         
@@ -53,7 +48,6 @@ def cache_result(expiry_seconds: int = 3600):
     return decorator
 
 def validate_portfolio_input(func: Callable) -> Callable:
-    """Validate portfolio input parameters"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         # Check if portfolio weights are provided and valid

@@ -1,7 +1,4 @@
-"""
-Enhanced AI Portfolio Management System - BlackRock-Level Application
-Institutional-grade portfolio management with comprehensive asset coverage
-"""
+# streamlit_app.py
 
 import streamlit as st
 import pandas as pd
@@ -38,7 +35,6 @@ if 'analysis_data' not in st.session_state:
     st.session_state.analysis_data = None
 
 def safe_import():
-    """Safely import enhanced modules"""
     try:
         # Import enhanced modules
         sys.path.insert(0, str(Path(__file__).parent))
@@ -60,7 +56,6 @@ def safe_import():
         return None, None, None, None, None, None
 
 def main():
-    """Enhanced main application"""
     
     # Safe imports
     market_data, portfolio_builder, config, data_loader, chart_generator, dashboard = safe_import()
@@ -108,7 +103,6 @@ def main():
         show_global_markets(market_data)
 
 def display_api_status(config):
-    """Display API connection status"""
     
     if config:
         api_status = config.get_api_status()
@@ -132,7 +126,6 @@ def display_api_status(config):
             st.write(f"{status} OpenAI")
 
 def show_enhanced_sidebar(market_data, portfolio_builder):
-    """Enhanced sidebar with institutional features"""
     
     st.header("🏛️ Portfolio Configuration")
     
@@ -179,7 +172,6 @@ def show_enhanced_sidebar(market_data, portfolio_builder):
         show_export_options()
 
 def show_template_selector(portfolio_builder):
-    """Show institutional portfolio templates"""
     
     templates = portfolio_builder.get_available_templates()
     
@@ -236,7 +228,6 @@ def show_template_selector(portfolio_builder):
         st.write(f"Target Volatility: {template_info['target_volatility']*100:.1f}%")
 
 def show_custom_selector(market_data):
-    """Show custom asset selection"""
     
     # Asset class filter
     asset_classes = st.multiselect(
@@ -302,7 +293,6 @@ def show_custom_selector(market_data):
                 st.session_state.portfolio = weights
 
 def show_smart_beta_builder(portfolio_builder):
-    """Show smart beta portfolio builder"""
     
     st.write("**Smart Beta Strategy:**")
     st.info("Factor-based portfolio using quality, momentum, and value factors")
@@ -323,7 +313,6 @@ def show_smart_beta_builder(portfolio_builder):
             st.error(f"Smart beta building failed: {str(e)}")
 
 def show_sector_rotation_builder(portfolio_builder):
-    """Show sector rotation portfolio builder"""
     
     st.write("**Sector Rotation Strategy:**")
     st.info("Momentum-based sector allocation using relative strength")
@@ -339,7 +328,6 @@ def show_sector_rotation_builder(portfolio_builder):
             st.error(f"Sector rotation building failed: {str(e)}")
 
 def show_risk_parity_builder(portfolio_builder, market_data):
-    """Show risk parity portfolio builder"""
     
     st.write("**Risk Parity Strategy:**")
     st.info("Equal risk contribution from each asset")
@@ -370,7 +358,6 @@ def show_risk_parity_builder(portfolio_builder, market_data):
             st.error(f"Risk parity building failed: {str(e)}")
 
 def show_institutional_dashboard(data_loader, chart_generator, dashboard):
-    """Enhanced institutional dashboard"""
     
     st.subheader("🏛️ Institutional Portfolio Dashboard")
     
@@ -416,7 +403,6 @@ def show_institutional_dashboard(data_loader, chart_generator, dashboard):
     show_ai_insights_card(analysis)
 
 def show_sample_portfolios():
-    """Show sample institutional portfolios"""
     
     st.info("**Sample Institutional Portfolios:**")
     
@@ -445,7 +431,6 @@ def show_sample_portfolios():
             st.rerun()
 
 def get_or_create_analysis(data_loader):
-    """Get or create portfolio analysis with caching"""
     
     if st.session_state.analysis_data is None:
         analysis = data_loader.get_portfolio_analysis(
@@ -458,7 +443,6 @@ def get_or_create_analysis(data_loader):
         return st.session_state.analysis_data
 
 def show_key_metrics(analysis):
-    """Show key performance metrics"""
     
     metrics = analysis.get('performance_metrics', {})
     
@@ -486,7 +470,6 @@ def show_key_metrics(analysis):
             st.metric("Calmar Ratio", f"{calmar:.2f}")
 
 def show_performance_chart(analysis, chart_generator):
-    """Show performance chart"""
     
     if 'portfolio_data' in analysis and not analysis['portfolio_data'].empty:
         try:
@@ -501,7 +484,6 @@ def show_performance_chart(analysis, chart_generator):
         st.info("Performance chart unavailable")
 
 def show_allocation_chart():
-    """Show current allocation"""
     
     if st.session_state.portfolio:
         # Create enhanced pie chart
@@ -521,7 +503,6 @@ def show_allocation_chart():
         st.plotly_chart(fig, use_container_width=True)
 
 def show_risk_metrics_chart(analysis, chart_generator):
-    """Show risk metrics visualization"""
     
     risk_metrics = analysis.get('risk_metrics', {})
     
@@ -533,13 +514,11 @@ def show_risk_metrics_chart(analysis, chart_generator):
             st.error(f"Risk chart error: {str(e)}")
 
 def show_sector_breakdown():
-    """Show sector breakdown analysis"""
     
     st.subheader("Sector Breakdown")
     
     # Analyze portfolio by sectors
     if st.session_state.portfolio:
-        # This would require sector mapping - simplified version
         sectors = {
             'Technology': 0.0,
             'Financials': 0.0,
@@ -550,7 +529,6 @@ def show_sector_breakdown():
             'Other': 0.0
         }
         
-        # Map symbols to sectors (simplified)
         sector_mapping = {
             'SPY': 'Diversified', 'QQQ': 'Technology', 'IWM': 'Small Cap',
             'TLT': 'Bonds', 'LQD': 'Bonds', 'HYG': 'Bonds',
@@ -577,7 +555,6 @@ def show_sector_breakdown():
             st.plotly_chart(fig, use_container_width=True)
 
 def show_ai_insights_card(analysis):
-    """Show AI insights in styled card"""
     
     st.subheader("🤖 AI Market Intelligence")
     
@@ -598,7 +575,6 @@ def show_ai_insights_card(analysis):
     """, unsafe_allow_html=True)
 
 def show_portfolio_builder(portfolio_builder, market_data):
-    """Portfolio builder interface"""
     
     st.subheader("📊 Advanced Portfolio Builder")
     
@@ -690,7 +666,6 @@ def show_portfolio_builder(portfolio_builder, market_data):
                 st.error(f"Portfolio generation failed: {str(e)}")
 
 def show_market_analysis(market_data, chart_generator):
-    """Market analysis dashboard"""
     
     st.subheader("⚡ Global Market Analysis")
     
@@ -755,7 +730,6 @@ def show_market_analysis(market_data, chart_generator):
             st.error(f"Sector analysis error: {str(e)}")
 
 def show_ai_insights(data_loader, market_data):
-    """Enhanced AI insights"""
     
     st.subheader("🤖 Advanced AI Analysis")
     
@@ -776,7 +750,6 @@ def show_ai_insights(data_loader, market_data):
         show_market_sentiment_analysis(market_data)
 
 def show_portfolio_ai_analysis(data_loader):
-    """AI portfolio analysis"""
     
     st.write("### Portfolio-Level AI Analysis")
     
@@ -804,7 +777,6 @@ def show_portfolio_ai_analysis(data_loader):
                 st.error(f"AI analysis failed: {str(e)}")
 
 def show_individual_asset_analysis(data_loader, market_data):
-    """Individual asset AI analysis"""
     
     st.write("### Individual Asset Analysis")
     
@@ -851,7 +823,6 @@ def show_individual_asset_analysis(data_loader, market_data):
                     st.error(f"Individual analysis failed: {str(e)}")
 
 def show_technical_analysis(stock_data, symbol):
-    """Show technical analysis"""
     
     st.subheader(f"📊 Technical Analysis - {symbol}")
     
@@ -916,7 +887,6 @@ def show_technical_analysis(stock_data, symbol):
                 st.metric("Last Day Return", f"{daily_return:.2f}%")
 
 def show_market_sentiment_analysis(market_data):
-    """Market sentiment analysis"""
     
     st.write("### Market Sentiment Analysis")
     st.info("This feature analyzes overall market sentiment from various sources")
@@ -938,7 +908,6 @@ def show_market_sentiment_analysis(market_data):
     """)
 
 def show_enhanced_risk_management(data_loader, dashboard):
-    """Enhanced risk management"""
     
     st.subheader("⚠️ Institutional Risk Management")
     
@@ -999,7 +968,6 @@ def show_enhanced_risk_management(data_loader, dashboard):
         st.error(f"Risk management analysis failed: {str(e)}")
 
 def show_global_markets(market_data):
-    """Global markets overview"""
     
     st.subheader("🌍 Global Markets Overview")
     
@@ -1060,7 +1028,6 @@ def show_global_markets(market_data):
                 st.metric(pair, f"{rate:.4f}")
 
 def show_export_options():
-    """Show data export options"""
     
     st.subheader("📊 Export Portfolio Data")
     

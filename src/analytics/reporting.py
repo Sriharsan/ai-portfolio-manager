@@ -1,16 +1,11 @@
-"""
-Reporting Module - Generate Portfolio Reports
-"""
-
+# src/analytics/reporting.py
 import pandas as pd
 from datetime import datetime
 from typing import Dict
 
 class ReportGenerator:
-    """Generate formatted portfolio reports"""
     
     def generate_summary_report(self, analysis_data: Dict) -> str:
-        """Generate text summary report"""
         
         if 'error' in analysis_data:
             return f"Report unavailable: {analysis_data['error']}"
@@ -42,7 +37,6 @@ AI INSIGHTS
         return report
     
     def export_to_csv(self, data: pd.DataFrame, filename: str) -> str:
-        """Export data to CSV"""
         filepath = f"data/processed/{filename}_{datetime.now().strftime('%Y%m%d')}.csv"
         data.to_csv(filepath)
         return filepath

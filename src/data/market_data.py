@@ -1,7 +1,4 @@
-"""
-Enhanced Market Data Provider - BlackRock-Level Data Integration
-Multi-source data aggregation with institutional-grade coverage
-"""
+# src/data/market_data.py
 
 import yfinance as yf
 import pandas as pd
@@ -22,11 +19,12 @@ warnings.filterwarnings('ignore')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+#  BlackRock-level market data provider with multi-source integration
+
 class InstitutionalMarketDataProvider:
-    """BlackRock-level market data provider with multi-source integration"""
     
     def __init__(self):
-        # Import config safely
+       
         try:
             from config import config
             self.alpha_vantage_key = config.ALPHA_VANTAGE_API_KEY
@@ -77,7 +75,6 @@ class InstitutionalMarketDataProvider:
             self.fred = None
     
     def _load_institutional_universe(self) -> Dict[str, Dict]:
-        """Load comprehensive asset universe like BlackRock"""
         
         universe = {
             # Large Cap US Stocks
@@ -155,7 +152,6 @@ class InstitutionalMarketDataProvider:
         return universe
     
     def get_available_assets(self, filter_by: Optional[Dict] = None) -> List[str]:
-        """Get available assets with optional filtering"""
         
         if not filter_by:
             return list(self.asset_universe.keys())
@@ -173,7 +169,6 @@ class InstitutionalMarketDataProvider:
         return filtered
     
     def get_stock_data_premium(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
-        """Get stock data using premium APIs with fallback"""
         
         self._rate_limit()
         
@@ -218,21 +213,10 @@ class InstitutionalMarketDataProvider:
         return self._get_yfinance_data(symbol, period, interval)
     
     def get_stock_data(self, symbol: str, period: str = "1y", interval: str = "1d") -> pd.DataFrame:
-        """
-        Get stock data - alias for get_stock_data_premium for compatibility
-
-        Args:
-            symbol: Stock symbol
-            period: Data period 
-            interval: Data interval
-    
-        Returns:
-           Stock data DataFrame
-        """
+        
         return self.get_stock_data_premium(symbol, period, interval)
     
     def _get_yfinance_data(self, symbol: str, period: str, interval: str) -> pd.DataFrame:
-        """Fallback to yfinance with enhanced error handling"""
         
         try:
             logger.info(f"Fetching {symbol} from yfinance")
@@ -256,7 +240,6 @@ class InstitutionalMarketDataProvider:
             return self._create_realistic_mock_data(symbol, period)
     
     def _filter_by_period(self, data: pd.DataFrame, period: str) -> pd.DataFrame:
-        """Filter data by requested period"""
         
         if data.empty:
             return data
@@ -279,7 +262,6 @@ class InstitutionalMarketDataProvider:
         return data[data.index >= start_date]
     
     def get_economic_indicators(self) -> Dict[str, float]:
-        """Get economic indicators from FRED"""
         
         indicators = {}
         
@@ -315,7 +297,6 @@ class InstitutionalMarketDataProvider:
         return indicators
     
     def get_sector_performance(self) -> Dict[str, Dict]:
-        """Get sector performance using sector ETFs"""
         
         sector_etfs = {
             'Technology': 'XLK',
@@ -348,7 +329,6 @@ class InstitutionalMarketDataProvider:
         return sector_performance
     
     def _create_realistic_mock_data(self, symbol: str, period: str) -> pd.DataFrame:
-        """Create realistic mock data based on asset class"""
         
         logger.info(f"Creating realistic mock data for {symbol}")
         
@@ -376,22 +356,18 @@ class InstitutionalMarketDataProvider:
         
         # Set parameters based on asset type
         if asset_type == 'etf' and 'Bonds' in sector:
-            # Bond-like behavior
             base_price = 100.0
             daily_vol = 0.003
             drift = 0.0002
         elif asset_type == 'etf' and sector == 'Commodities':
-            # Commodity-like behavior
             base_price = 150.0
             daily_vol = 0.02
             drift = 0.0001
         elif sector == 'Technology':
-            # Tech stock behavior
             base_price = np.random.uniform(150, 300)
             daily_vol = 0.025
             drift = 0.001
         else:
-            # General equity behavior
             base_price = np.random.uniform(50, 200)
             daily_vol = 0.018
             drift = 0.0008
@@ -438,7 +414,6 @@ class InstitutionalMarketDataProvider:
         return df
     
     def _add_technical_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Add comprehensive technical indicators"""
         
         if data.empty:
             return data
@@ -490,7 +465,6 @@ class InstitutionalMarketDataProvider:
         return data
     
     def _clean_stock_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Enhanced data cleaning"""
         
         # Remove rows with missing essential data
         data = data.dropna(subset=['Open', 'High', 'Low', 'Close', 'Volume'])
@@ -511,7 +485,6 @@ class InstitutionalMarketDataProvider:
         return data
     
     def _rate_limit(self):
-        """Enhanced rate limiting for multiple APIs"""
         current_time = time.time()
         time_since_last_call = current_time - self.last_call_time
         
@@ -521,17 +494,7 @@ class InstitutionalMarketDataProvider:
         self.last_call_time = time.time()
         
     def get_portfolio_data(self, portfolio_weights: Dict[str, float], period: str = '1y') -> Tuple[Dict[str, pd.DataFrame], pd.DataFrame]:
-        """
-        Get portfolio data for multiple symbols
-
-        Args:
-            portfolio_weights: Dictionary of symbol -> weight
-            period: Data period
-
-        Returns:
-            Tuple of (individual stock data dict, portfolio returns dataframe)
-        """
-    
+       
         stock_data = {}
         portfolio_returns_data = []
     
@@ -561,7 +524,6 @@ class InstitutionalMarketDataProvider:
 
     def _calculate_portfolio_returns(self, stock_data: Dict[str, pd.DataFrame], 
                                    weights: Dict[str, float]) -> pd.DataFrame:
-        """Calculate weighted portfolio returns"""
 
         # Get all dates that appear in any stock
         all_dates = set()

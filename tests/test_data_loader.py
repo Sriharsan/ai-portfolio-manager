@@ -1,6 +1,4 @@
-"""
-Test Suite for Data Loader Module
-"""
+# tests/test_data_loader.py
 
 import pytest
 import sys
@@ -14,10 +12,8 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 from data.data_loader import data_loader
 
 class TestDataLoader:
-    """Test data loader functionality"""
     
     def test_portfolio_analysis_basic(self):
-        """Test basic portfolio analysis"""
         portfolio = {'AAPL': 0.5, 'MSFT': 0.5}
         
         result = data_loader.get_portfolio_analysis(portfolio, '1mo')
@@ -30,7 +26,6 @@ class TestDataLoader:
             assert 'ai_insights' in result
     
     def test_stock_analysis(self):
-        """Test individual stock analysis"""
         result = data_loader.get_stock_analysis('AAPL', '1mo')
         
         assert isinstance(result, dict)
@@ -40,7 +35,6 @@ class TestDataLoader:
             assert 'ai_insight' in result
     
     def test_invalid_portfolio(self):
-        """Test handling of invalid portfolio"""
         invalid_portfolio = {'INVALID': 1.0}
         
         result = data_loader.get_portfolio_analysis(invalid_portfolio, '1mo')
@@ -49,7 +43,6 @@ class TestDataLoader:
         assert isinstance(result, dict)
     
     def test_empty_portfolio(self):
-        """Test empty portfolio handling"""
         empty_portfolio = {}
         
         result = data_loader.get_portfolio_analysis(empty_portfolio, '1mo')
@@ -57,7 +50,7 @@ class TestDataLoader:
         assert 'error' in result or len(result) == 0
 
 if __name__ == "__main__":
-    # Run tests
+
     test_loader = TestDataLoader()
     
     try:

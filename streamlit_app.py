@@ -36,25 +36,23 @@ if 'analysis_data' not in st.session_state:
 
 def safe_import():
     try:
-        # Import enhanced modules
-        sys.path.insert(0, str(Path(__file__).parent))
-        from src.data.market_data import market_data_provider
-        from src.models.portfolio_optimizer import InstitutionalPortfolioBuilder
-        from config import config
-        from src.data.data_loader import data_loader
-        from src.visualization.charts import chart_generator
-        from src.visualization.dashboards import dashboard
-        
-        # Initialize portfolio builder
-        portfolio_builder = InstitutionalPortfolioBuilder(market_data_provider)
-        
-        return market_data_provider, portfolio_builder, config, data_loader, chart_generator, dashboard
-    except Exception as e:
-        st.error(f"Import error: {str(e)}")
-        st.info("Please ensure all dependencies are installed and the enhanced modules are available.")
-        st.code("pip install -r requirements.txt")
-        return None, None, None, None, None, None
-
+        from src.models.advanced_optimization import institutional_optimizer
+        from src.models.institutional_risk import institutional_risk_manager  
+        from src.models.ml_engine import ml_engine as ml_engine_advanced
+        from src.analytics.backtesting import professional_backtester
+        from src.data.alternative_data import alternative_data_processor
+        return True, {
+            'optimizer': institutional_optimizer,
+            'risk_manager': institutional_risk_manager,
+            'ml_engine': ml_engine_advanced,
+            'backtester': professional_backtester,
+            'alt_data': alternative_data_processor
+        }
+    except ImportError as e:
+        st.warning(f"Advanced features unavailable: {e}")
+        return False, {}
+    
+    
 def main():
     
     # Safe imports

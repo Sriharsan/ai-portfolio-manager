@@ -7,7 +7,7 @@ from pathlib import Path
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from models.portfolio_optimizer import optimizer
+from models.portfolio_optimizer import InstitutionalPortfolioBuilder
 from models.risk_manager import risk_manager
 from models.sentiment_analyzer import sentiment_analyzer
 from analytics.performance import performance_analyzer

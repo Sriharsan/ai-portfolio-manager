@@ -35,29 +35,273 @@ if 'analysis_data' not in st.session_state:
     st.session_state.analysis_data = None
 
 def safe_import():
+    """Safe import of all modules with proper error handling"""
     try:
-        from src.models.advanced_optimization import institutional_optimizer
-        from src.models.institutional_risk import institutional_risk_manager  
-        from src.models.ml_engine import ml_engine as ml_engine_advanced
-        from src.analytics.backtesting import professional_backtester
-        from src.data.alternative_data import alternative_data_processor
-        return True, {
-            'optimizer': institutional_optimizer,
-            'risk_manager': institutional_risk_manager,
-            'ml_engine': ml_engine_advanced,
-            'backtester': professional_backtester,
-            'alt_data': alternative_data_processor
+        # Core imports
+        from data.market_data import market_data_provider
+        from models.portfolio_optimizer import InstitutionalPortfolioBuilder
+        from config import config
+        from data.data_loader import data_loader
+        from visualization.charts import chart_generator
+        from visualization.dashboards import dashboard
+        
+        # Initialize portfolio builder with market data
+        portfolio_builder = InstitutionalPortfolioBuilder(market_data_provider)
+        
+        # Log initialization status
+        if not portfolio_builder.advanced_features_available:
+            st.warning("⚠️ Some advanced features may be limited")
+        
+        # Wrap everything in a dict
+        modules = {
+            "market_data_provider": market_data_provider,
+            "portfolio_builder": portfolio_builder,
+            "config": config,
+            "data_loader": data_loader,
+            "chart_generator": chart_generator,
+            "dashboard": dashboard,
         }
+        
+        return True, modules
+        
     except ImportError as e:
-        st.warning(f"Advanced features unavailable: {e}")
+        st.error(f"❌ Critical import failed: {e}")
+        st.error("Please check your installation and file structure")
+        st.stop()
         return False, {}
+
+  
+def show_advanced_optimization_tab(portfolio_builder, market_data):
+    """Advanced institutional optimization interface"""
     
+    st.subheader("🔬 Advanced Institutional Optimization")
+    
+    if not portfolio_builder.advanced_features_available:
+        st.error("❌ Advanced optimization engines not available")
+        st.info("Check your installation: pip install cvxpy arch scikit-learn tensorflow")
+        return
+    
+    st.success("✅ Advanced optimization engines loaded: Markowitz, Black-Litterman, Risk Parity, ML-Enhanced")
+    
+    # Optimization method selection
+    optimization_method = st.selectbox(
+        "Select Optimization Method:",
+        [
+            "Markowitz Mean-Variance", 
+            "Black-Litterman with Views", 
+            "Risk Parity", 
+            "ML-Enhanced (LSTM + Ensemble)"
+        ]
+    )
+    
+    # Asset selection
+    st.subheader("Asset Universe")
+    
+    preset_universe = st.selectbox(
+        "Choose Asset Universe:",
+        ["Multi-Asset Global", "US Equity Focus", "Sector ETFs", "Custom Selection"]
+    )
+    
+    if preset_universe == "Multi-Asset Global":
+        selected_assets = ['SPY', 'QQQ', 'VEA', 'VWO', 'TLT', 'LQD', 'VNQ', 'GLD', 'USO']
+    elif preset_universe == "US Equity Focus":
+        selected_assets = ['SPY', 'QQQ', 'IWM', 'XLK', 'XLF', 'XLV', 'XLE', 'XLY']
+    elif preset_universe == "Sector ETFs":
+        selected_assets = ['XLK', 'XLF', 'XLV', 'XLE', 'XLY', 'XLP', 'XLI', 'XLU', 'XLRE', 'XLB']
+    else:
+        available_assets = market_data.get_available_assets()
+        selected_assets = st.multiselect(
+            "Select Assets:",
+            available_assets,
+            default=available_assets[:10] if len(available_assets) >= 10 else available_assets
+        )
+    
+    if not selected_assets:
+        st.warning("Please select assets to optimize")
+        return
+    
+    st.write(f"**Selected Assets:** {', '.join(selected_assets)}")
+    
+    # Method-specific parameters
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if "Markowitz" in optimization_method:
+            target_return = st.slider("Target Annual Return:", 0.05, 0.20, 0.08, 0.01)
+            risk_aversion = st.slider("Risk Aversion:", 0.5, 5.0, 1.0, 0.1)
+            
+        elif "Black-Litterman" in optimization_method:
+            st.subheader("Market Views")
+            market_views = {}
+            
+            # Allow user to set views for top assets
+            for asset in selected_assets[:5]:
+                view = st.slider(f"{asset} Expected Return:", -0.10, 0.10, 0.0, 0.01)
+                if view != 0:
+                    market_views[asset] = view
+        
+        elif "ML-Enhanced" in optimization_method:
+            st.info("🤖 ML models will predict returns using LSTM + Ensemble methods")
+            ml_weight = st.slider("ML Prediction Weight:", 0.1, 0.7, 0.3, 0.05)
+    
+    with col2:
+        st.subheader("Constraints")
+        max_position = st.slider("Max Position Size:", 0.05, 0.50, 0.25, 0.01)
+        min_position = st.slider("Min Position Size:", 0.0, 0.05, 0.01, 0.001)
+    
+    # Run optimization
+    if st.button("🚀 Run Advanced Optimization", type="primary"):
+        with st.spinner(f"Running {optimization_method}..."):
+            try:
+                if "Markowitz" in optimization_method:
+                    result = portfolio_builder.markowitz_optimization(
+                        selected_assets, 
+                        target_return=target_return,
+                        risk_aversion=risk_aversion
+                    )
+                
+                elif "Black-Litterman" in optimization_method:
+                    result = portfolio_builder.black_litterman_optimization(
+                        selected_assets,
+                        market_views=market_views
+                    )
+                
+                elif "Risk Parity" in optimization_method:
+                    result = portfolio_builder.risk_parity_optimization(selected_assets)
+                
+                elif "ML-Enhanced" in optimization_method:
+                    result = portfolio_builder.ml_enhanced_optimization(selected_assets)
+                
+                else:
+                    st.error("Unknown optimization method")
+                    return
+                
+                # Display results
+                if 'error' in result:
+                    st.error(f"❌ Optimization failed: {result['error']}")
+                    return
+                
+                if 'weights' not in result:
+                    st.error("❌ No portfolio weights returned")
+                    return
+                
+                st.success("✅ Optimization completed successfully!")
+                
+                # Store in session state
+                st.session_state.portfolio = result['weights']
+                st.session_state.optimization_result = result
+                st.session_state.analysis_data = None
+                
+                # Show results
+                show_advanced_optimization_results(result, optimization_method)
+                
+            except Exception as e:
+                st.error(f"❌ Optimization failed: {str(e)}")
+                st.exception(e)
+
+def show_advanced_optimization_results(result, method_name):
+    """Display advanced optimization results"""
+    
+    st.subheader("🎯 Advanced Optimization Results")
+    
+    # Portfolio weights
+    weights = result['weights']
+    weights_df = pd.DataFrame([
+        {'Asset': asset, 'Weight': f"{weight*100:.1f}%", 'Value': weight}
+        for asset, weight in weights.items()
+    ]).sort_values('Value', ascending=False)
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.write("**Optimized Portfolio Allocation:**")
+        st.dataframe(weights_df[['Asset', 'Weight']], hide_index=True)
+    
+    with col2:
+        # Pie chart
+        fig_pie = go.Figure(data=[go.Pie(
+            labels=list(weights.keys()),
+            values=list(weights.values()),
+            hole=0.3
+        )])
+        fig_pie.update_layout(title="Portfolio Allocation", height=400)
+        st.plotly_chart(fig_pie, use_container_width=True)
+    
+    # Performance metrics
+    if 'expected_return' in result:
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Expected Return", f"{result['expected_return']*100:.1f}%")
+        
+        with col2:
+            st.metric("Expected Volatility", f"{result['expected_volatility']*100:.1f}%")
+        
+        with col3:
+            st.metric("Sharpe Ratio", f"{result.get('sharpe_ratio', 0):.2f}")
+        
+        with col4:
+            st.metric("Status", result.get('optimization_status', 'Unknown'))
+    
+    # ML predictions if available
+    if 'ml_predictions' in result:
+        st.subheader("🤖 ML Predictions Used")
+        
+        ml_preds = result['ml_predictions']
+        pred_df = pd.DataFrame([
+            {'Asset': asset, 'ML Prediction': f"{pred*100:.2f}%"}
+            for asset, pred in ml_preds.items()
+        ])
+        st.dataframe(pred_df, hide_index=True)
+    
+    # Risk analysis if available
+    if 'risk_analysis' in result:
+        st.subheader("⚠️ Institutional Risk Analysis")
+        
+        risk_analysis = result['risk_analysis']
+        
+        # Monte Carlo VaR
+        if 'monte_carlo_var' in risk_analysis:
+            mc_var = risk_analysis['monte_carlo_var']
+            if 'error' not in mc_var:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("VaR (95%)", f"${mc_var.get('var_95', 0):,.0f}")
+                with col2:
+                    st.metric("CVaR (95%)", f"${mc_var.get('cvar_95', 0):,.0f}")
+        
+        # Stress test results
+        if 'stress_tests' in risk_analysis:
+            stress_tests = risk_analysis['stress_tests']
+            if 'scenarios' in stress_tests:
+                st.write("**Stress Test Results:**")
+                stress_data = []
+                for scenario, results in stress_tests['scenarios'].items():
+                    stress_data.append({
+                        'Scenario': scenario.replace('_', ' ').title(),
+                        'Portfolio Impact': f"{results['loss_percentage']*100:.1f}%"
+                    })
+                
+                stress_df = pd.DataFrame(stress_data)
+                st.dataframe(stress_df, hide_index=True)
+    
+    st.info("💡 Portfolio has been saved to your session. Switch to other tabs to see full analysis.")  
+  
     
 def main():
     
     # Safe imports
-    market_data, portfolio_builder, config, data_loader, chart_generator, dashboard = safe_import()
-    
+    success, modules = safe_import()
+    if not success:
+        st.stop()
+
+    market_data = modules.get('market_data_provider')
+    portfolio_builder = modules.get('portfolio_builder') 
+    config = modules.get('config')
+    data_loader = modules.get('data_loader')
+    chart_generator = modules.get('chart_generator')
+    dashboard = modules.get('dashboard')  
+      
     if not all([market_data, portfolio_builder]):
         st.stop()
     
@@ -73,9 +317,10 @@ def main():
         show_enhanced_sidebar(market_data, portfolio_builder)
     
     # Main content tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "🏛️ Institutional Dashboard", 
         "📊 Portfolio Builder",
+        "🔬 Advanced Optimization",  # NEW TAB
         "⚡ Market Analysis", 
         "🤖 AI Insights", 
         "⚠️ Risk Management",
@@ -89,15 +334,18 @@ def main():
         show_portfolio_builder(portfolio_builder, market_data)
     
     with tab3:
-        show_market_analysis(market_data, chart_generator)
+        show_advanced_optimization_tab(portfolio_builder, market_data)  # NEW
     
     with tab4:
-        show_ai_insights(data_loader, market_data)
+        show_market_analysis(market_data, chart_generator)
     
     with tab5:
-        show_enhanced_risk_management(data_loader, dashboard)
+        show_ai_insights(data_loader, market_data)
     
     with tab6:
+        show_enhanced_risk_management(data_loader, dashboard)
+    
+    with tab7:
         show_global_markets(market_data)
 
 def display_api_status(config):

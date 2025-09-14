@@ -26,10 +26,13 @@ class InstitutionalMarketDataProvider:
     def __init__(self):
        
         try:
-            from config import config
-            self.alpha_vantage_key = config.ALPHA_VANTAGE_API_KEY
-            self.fred_key = config.FRED_API_KEY
-            self.cache_dir = config.CACHE_DIR
+            import sys
+            from pathlib import Path
+            sys.path.append(str(Path(__file__).parent.parent))
+            from config.config import app_config
+            self.alpha_vantage_key = app_config.ALPHA_VANTAGE_API_KEY
+            self.fred_key = app_config.FRED_API_KEY
+            self.cache_dir = app_config.CACHE_DIR
         except ImportError:
             import os
             self.alpha_vantage_key = os.getenv('ALPHA_VANTAGE_API_KEY', '')

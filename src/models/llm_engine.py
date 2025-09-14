@@ -7,6 +7,10 @@ import logging
 import re
 from pathlib import Path
 
+# ✅ Add OpenAI import
+import openai
+
+
 class OptimizedLLMEngine:
     
     def __init__(self):
@@ -24,11 +28,20 @@ class OptimizedLLMEngine:
                 device=-1  # CPU only for memory efficiency
             )
             self.use_transformers = True
+            self.use_openai = False
             self.logger.info("✅ FinBERT loaded")
         except Exception as e:
-            self.logger.warning(f"Using rule-based models: {e}")
+            self.logger.warning(f"FinBERT failed, trying OpenAI: {e}")
             self.use_transformers = False
-            self._setup_rule_based_models()
+            try:
+                from config import config
+                openai.api_key = config.OPENAI_API_KEY
+                self.use_openai = True
+                self.logger.info("✅ OpenAI GPT initialized")
+            except Exception as e2:
+                self.logger.warning(f"OpenAI not available, using rule-based: {e2}")
+                self.use_openai = False
+                self._setup_rule_based_models()
     
     def _setup_rule_based_models(self):
         self.positive_words = {
@@ -59,6 +72,13 @@ class OptimizedLLMEngine:
                     'score': result['score'],
                     'model': 'finbert'
                 }
+            elif getattr(self, "use_openai", False):
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": f"Classify the financial sentiment of this text: {text}"}]
+                )
+                label = response['choices'][0]['message']['content'].strip().lower()
+                return {'label': label, 'score': 0.7, 'model': 'openai'}
             else:
                 return self._rule_based_sentiment(text)
         except Exception:
@@ -84,6 +104,16 @@ class OptimizedLLMEngine:
     def generate_market_insight(self, stock_data: pd.DataFrame, symbol: str) -> str:
         try:
             analysis = self._analyze_stock_metrics(stock_data, symbol)
+
+            # ✅ Use OpenAI if available
+            if getattr(self, "use_openai", False):
+                prompt = f"Generate a professional financial market insight for {symbol} given this analysis: {analysis}"
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response['choices'][0]['message']['content']
+
             return self._create_insight_text(analysis, symbol)
         except Exception as e:
             self.logger.error(f"Insight generation failed: {e}")
@@ -165,6 +195,15 @@ class OptimizedLLMEngine:
             # Calculate weighted return
             portfolio_return = sum(h['return'] * h['weight'] for h in holdings_perf)
             
+            # ✅ Use OpenAI if available
+            if getattr(self, "use_openai", False):
+                prompt = f"Summarize this portfolio performance with top and bottom contributors: {holdings_perf}, portfolio return={portfolio_return}"
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response['choices'][0]['message']['content']
+
             # Create summary
             if portfolio_return > 0.01:
                 summary = f"Portfolio is up {portfolio_return*100:.1f}% today with positive momentum. "
@@ -205,6 +244,7 @@ class OptimizedLLMEngine:
                 })
         
         return entities
+
 
 # Global instance
 llm_engine = OptimizedLLMEngine()

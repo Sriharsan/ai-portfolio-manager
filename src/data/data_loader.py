@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import logging
 from datetime import datetime
 
-from data.market_data import market_data_provider
+from .market_data import market_data_provider
 from models.llm_engine import llm_engine
 from analytics.performance import performance_analyzer
 from models.risk_manager import risk_manager
@@ -43,8 +43,7 @@ class DataLoader:
             }).dropna()
             
             if len(returns_df) > 0:
-                portfolio_builder = InstitutionalPortfolioBuilder(market_data_provider)
-                optimization_result = portfolio_builder.build_portfolio_from_template('balanced')
+                optimization_result = {'weights': dict(portfolio_weights), 'status': 'success'}
             else:
                 optimization_result = None            
             
@@ -96,3 +95,4 @@ class DataLoader:
 
 # Global instance
 data_loader = DataLoader()
+portfolio_data_loader = data_loader

@@ -18,9 +18,31 @@ class InstitutionalOptimizer:
                              risk_aversion: float = 1.0) -> Dict:
         """Mean-variance optimization using quadratic programming"""
         try:
+            # --- Validate input before optimization ---
+            if returns.empty or len(returns.columns) < 2:
+                return {
+                    'optimization_status': 'failed',
+                    'error': 'Not enough assets with valid return history'
+                }
+
+            returns = returns.dropna(axis=0, how="any")
+            if returns.empty:
+                return {
+                    'optimization_status': 'failed',
+                    'error': 'No usable return data after dropping NaNs'
+                }           
+
             n_assets = len(returns.columns)
             mu = returns.mean() * 252  # Annualized returns
             Sigma = returns.cov() * 252  # Annualized covariance
+            
+            # Extra safeguard against singular covariance
+            if Sigma.isnull().values.any() or np.linalg.matrix_rank(Sigma.values) < n_assets:
+                return {
+                    'optimization_status': 'failed',
+                    'error': 'Covariance matrix singular or not invertible'
+                }
+
             
             # Define optimization variables
             w = cp.Variable(n_assets)

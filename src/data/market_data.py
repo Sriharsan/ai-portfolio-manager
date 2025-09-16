@@ -51,6 +51,7 @@ class InstitutionalMarketDataProvider:
         
         logger.info("Institutional Market Data Provider initialized")
         logger.info(f"Available assets: {len(self.asset_universe)} symbols")
+        logger.info(f"Asset symbols: {list(self.asset_universe.keys())}")    
     
     def _setup_api_clients(self):
         """Initialize premium API clients"""
@@ -526,60 +527,55 @@ class InstitutionalMarketDataProvider:
         return {}, pd.DataFrame()
 
     def _calculate_portfolio_returns(self, stock_data: Dict[str, pd.DataFrame], 
-                                   weights: Dict[str, float]) -> pd.DataFrame:
-
-        # Get all dates that appear in any stock
-        all_dates = set()
-        for data in stock_data.values():
-            all_dates.update(data.index)
-
-        all_dates = sorted(list(all_dates))
-
-        if not all_dates:
+                               weights: Dict[str, float]) -> pd.DataFrame:
+    
+        # Get common date range across all stocks
+        date_sets = []
+        for symbol, data in stock_data.items():
+            if not data.empty and symbol in weights:
+                date_sets.append(set(data.index))
+    
+        if not date_sets:
             return pd.DataFrame()
-
-        # Create portfolio returns dataframe
-        portfolio_data = pd.DataFrame(index=all_dates)
-
-        # Calculate daily portfolio returns
+    
+        # Use intersection of dates (only dates where ALL assets have data)
+        common_dates = date_sets[0]
+        for date_set in date_sets[1:]:
+            common_dates = common_dates.intersection(date_set)
+    
+        if not common_dates:
+            return pd.DataFrame()
+    
+        common_dates = sorted(list(common_dates))
+        portfolio_data = pd.DataFrame(index=common_dates)
+    
+        # Calculate portfolio returns using common dates only
         daily_returns = []
-        portfolio_values = []
-
-        for date in all_dates:
+        for date in common_dates:
             daily_return = 0
             total_weight = 0
-
+        
             for symbol, weight in weights.items():
                 if symbol in stock_data:
-                    symbol_data = stock_data[symbol]
-                    if date in symbol_data.index and 'Daily_Return' in symbol_data.columns:
-                        symbol_return = symbol_data.loc[date, 'Daily_Return']
-                        if not pd.isna(symbol_return):
+                    data = stock_data[symbol]
+                    if date in data.index and 'Daily_Return' in data.columns:
+                        symbol_return = data.loc[date, 'Daily_Return']
+                        if pd.notna(symbol_return):
                             daily_return += weight * symbol_return
                             total_weight += weight
-
-            # Normalize by actual weight (in case some stocks missing data)
+        
+            # Normalize if some assets missing
             if total_weight > 0:
                 daily_return = daily_return / total_weight
-
+        
             daily_returns.append(daily_return)
-
-        # Add to dataframe
+    
         portfolio_data['Daily_Return'] = daily_returns
         portfolio_data['Cumulative_Return'] = (1 + portfolio_data['Daily_Return']).cumprod() - 1
-
-        # Add portfolio value (assuming $100k starting value)
+    
         starting_value = 100000
         portfolio_data['Portfolio_Value'] = starting_value * (1 + portfolio_data['Cumulative_Return'])
-
-        # Add rolling volatility
-        if len(portfolio_data) >= 30:
-            portfolio_data['Volatility_30d'] = portfolio_data['Daily_Return'].rolling(30).std() * np.sqrt(252)
-
-        # Add drawdown
-        running_max = portfolio_data['Cumulative_Return'].cummax()
-        portfolio_data['Drawdown'] = (portfolio_data['Cumulative_Return'] - running_max) / (1 + running_max)
-
+    
         return portfolio_data.dropna()
 
 # Global instance

@@ -38,12 +38,12 @@ def safe_import():
     """Safe import of all modules with proper error handling"""
     try:
         # Core imports
-        from data.market_data import market_data_provider
-        from models.portfolio_optimizer import InstitutionalPortfolioBuilder
-        from config import config
-        from data.data_loader import data_loader
-        from visualization.charts import chart_generator
-        from visualization.dashboards import dashboard
+        from src.data.market_data import market_data_provider
+        from src.models.portfolio_optimizer import InstitutionalPortfolioBuilder
+        from src.config import config
+        from src.data.data_loader import data_loader
+        from src.visualization.charts import chart_generator
+        from src.visualization.dashboards import dashboard
         
         # Initialize portfolio builder with market data
         portfolio_builder = InstitutionalPortfolioBuilder(market_data_provider)
@@ -72,7 +72,7 @@ def safe_import():
 
   
 def show_advanced_optimization_tab(portfolio_builder, market_data):
-    """Advanced institutional optimization interface"""
+    """Advanced institutional optimization interface with better error handling"""
     
     st.subheader("🔬 Advanced Institutional Optimization")
     
@@ -81,7 +81,7 @@ def show_advanced_optimization_tab(portfolio_builder, market_data):
         st.info("Check your installation: pip install cvxpy arch scikit-learn tensorflow")
         return
     
-    st.success("✅ Advanced optimization engines loaded: Markowitz, Black-Litterman, Risk Parity, ML-Enhanced")
+    st.success("✅ Advanced optimization engines loaded: Markowitz, Black-Litterman, Risk Parity")
     
     # Optimization method selection
     optimization_method = st.selectbox(
@@ -89,12 +89,11 @@ def show_advanced_optimization_tab(portfolio_builder, market_data):
         [
             "Markowitz Mean-Variance", 
             "Black-Litterman with Views", 
-            "Risk Parity", 
-            "ML-Enhanced (LSTM + Ensemble)"
+            "Risk Parity"
         ]
     )
     
-    # Asset selection
+    # Asset selection with validation
     st.subheader("Asset Universe")
     
     preset_universe = st.selectbox(
@@ -103,21 +102,21 @@ def show_advanced_optimization_tab(portfolio_builder, market_data):
     )
     
     if preset_universe == "Multi-Asset Global":
-        selected_assets = ['SPY', 'QQQ', 'VEA', 'VWO', 'TLT', 'LQD', 'VNQ', 'GLD', 'USO']
+        selected_assets = ['SPY', 'QQQ', 'VEA', 'VWO', 'TLT', 'LQD', 'VNQ', 'GLD']
     elif preset_universe == "US Equity Focus":
-        selected_assets = ['SPY', 'QQQ', 'IWM', 'XLK', 'XLF', 'XLV', 'XLE', 'XLY']
+        selected_assets = ['SPY', 'QQQ', 'IWM', 'XLK', 'XLF', 'XLV', 'XLE']
     elif preset_universe == "Sector ETFs":
-        selected_assets = ['XLK', 'XLF', 'XLV', 'XLE', 'XLY', 'XLP', 'XLI', 'XLU', 'XLRE', 'XLB']
+        selected_assets = ['XLK', 'XLF', 'XLV', 'XLE', 'XLY', 'XLP', 'XLI', 'XLU']
     else:
         available_assets = market_data.get_available_assets()
         selected_assets = st.multiselect(
-            "Select Assets:",
+            "Select Assets (minimum 3):",
             available_assets,
-            default=available_assets[:10] if len(available_assets) >= 10 else available_assets
+            default=available_assets[:8] if len(available_assets) >= 8 else available_assets
         )
     
-    if not selected_assets:
-        st.warning("Please select assets to optimize")
+    if len(selected_assets) < 2:
+        st.warning("Please select at least 2 assets to optimize")
         return
     
     st.write(f"**Selected Assets:** {', '.join(selected_assets)}")
@@ -131,74 +130,216 @@ def show_advanced_optimization_tab(portfolio_builder, market_data):
             risk_aversion = st.slider("Risk Aversion:", 0.5, 5.0, 1.0, 0.1)
             
         elif "Black-Litterman" in optimization_method:
-            st.subheader("Market Views")
+            st.subheader("Market Views (Optional)")
             market_views = {}
             
-            # Allow user to set views for top assets
-            for asset in selected_assets[:5]:
-                view = st.slider(f"{asset} Expected Return:", -0.10, 0.10, 0.0, 0.01)
-                if view != 0:
+            # Allow user to set views for selected assets
+            for i, asset in enumerate(selected_assets[:4]):  # Limit to 4 views
+                view = st.slider(f"{asset} Expected Return:", -0.10, 0.15, 0.0, 0.01, key=f"view_{i}")
+                if abs(view) > 0.005:  # Only include non-zero views
                     market_views[asset] = view
-        
-        elif "ML-Enhanced" in optimization_method:
-            st.info("🤖 ML models will predict returns using LSTM + Ensemble methods")
-            ml_weight = st.slider("ML Prediction Weight:", 0.1, 0.7, 0.3, 0.05)
     
     with col2:
-        st.subheader("Constraints")
-        max_position = st.slider("Max Position Size:", 0.05, 0.50, 0.25, 0.01)
-        min_position = st.slider("Min Position Size:", 0.0, 0.05, 0.01, 0.001)
+        st.subheader("Risk Constraints")
+        max_position = st.slider("Max Position Size:", 0.10, 0.60, 0.30, 0.05)
+        min_position = st.slider("Min Position Size:", 0.0, 0.10, 0.01, 0.005)
     
-    # Run optimization
+    # Run optimization with comprehensive error handling
     if st.button("🚀 Run Advanced Optimization", type="primary"):
         with st.spinner(f"Running {optimization_method}..."):
             try:
+                # Validate inputs first
+                if len(selected_assets) < 2:
+                    st.error("Need at least 2 assets for optimization")
+                    return
+                
+                # Check data availability first
+                st.info("Checking data availability...")
+                data_check_passed = True
+                for asset in selected_assets:
+                    try:
+                        test_data = market_data.get_stock_data(asset, '1mo')
+                        if test_data.empty:
+                            st.warning(f"No data available for {asset}")
+                            data_check_passed = False
+                    except Exception as e:
+                        st.warning(f"Data check failed for {asset}: {str(e)}")
+                        data_check_passed = False
+                
+                if not data_check_passed:
+                    st.error("Data validation failed. Try with different assets.")
+                    return
+                
+                # Run the selected optimization
                 if "Markowitz" in optimization_method:
-                    result = portfolio_builder.markowitz_optimization(
+                    result = portfolio_builder.optimize_portfolio_advanced(
                         selected_assets, 
+                        method='markowitz',
                         target_return=target_return,
                         risk_aversion=risk_aversion
                     )
                 
                 elif "Black-Litterman" in optimization_method:
-                    result = portfolio_builder.black_litterman_optimization(
+                    result = portfolio_builder.optimize_portfolio_advanced(
                         selected_assets,
+                        method='black_litterman', 
                         market_views=market_views
                     )
                 
                 elif "Risk Parity" in optimization_method:
-                    result = portfolio_builder.risk_parity_optimization(selected_assets)
-                
-                elif "ML-Enhanced" in optimization_method:
-                    result = portfolio_builder.ml_enhanced_optimization(selected_assets)
+                    result = portfolio_builder.optimize_portfolio_advanced(
+                        selected_assets,
+                        method='risk_parity'
+                    )
                 
                 else:
                     st.error("Unknown optimization method")
                     return
                 
-                # Display results
+                # Handle results with comprehensive error checking
+                if not result:
+                    st.error("No result returned from optimization")
+                    return
+                
                 if 'error' in result:
-                    st.error(f"❌ Optimization failed: {result['error']}")
+                    st.error(f"Optimization failed: {result['error']}")
+                    
+                    # Provide helpful suggestions
+                    if 'insufficient' in result['error'].lower():
+                        st.info("💡 Try selecting assets with longer history or use a shorter analysis period")
+                    elif 'singular' in result['error'].lower() or 'invertible' in result['error'].lower():
+                        st.info("💡 Try selecting assets from different sectors to improve diversification")
+                    
                     return
                 
                 if 'weights' not in result:
-                    st.error("❌ No portfolio weights returned")
+                    st.error("Optimization did not return portfolio weights")
+                    st.write(f"Result keys: {list(result.keys())}")
                     return
                 
+                # Success - display results
                 st.success("✅ Optimization completed successfully!")
                 
                 # Store in session state
                 st.session_state.portfolio = result['weights']
-                st.session_state.optimization_result = result
-                st.session_state.analysis_data = None
+                if hasattr(st.session_state, 'optimization_result'):
+                    st.session_state.optimization_result = result
+                st.session_state.analysis_data = None  # Force refresh
                 
                 # Show results
-                show_advanced_optimization_results(result, optimization_method)
+                show_advanced_optimization_results_safe(result, optimization_method)
                 
             except Exception as e:
-                st.error(f"❌ Optimization failed: {str(e)}")
-                st.exception(e)
+                st.error(f"❌ Optimization failed with error: {str(e)}")
+                
+                # Show debug info in expander
+                with st.expander("Debug Information"):
+                    st.write("Selected assets:", selected_assets)
+                    st.write("Error details:", str(e))
+                    import traceback
+                    st.code(traceback.format_exc())
 
+def show_advanced_optimization_results_safe(result, method_name):
+    """Display optimization results with error handling"""
+    
+    try:
+        st.subheader("🎯 Advanced Optimization Results")
+        
+        # Validate result structure
+        if not isinstance(result, dict) or 'weights' not in result:
+            st.error("Invalid optimization result format")
+            return
+        
+        weights = result['weights']
+        
+        # Validate weights
+        if not weights or not isinstance(weights, dict):
+            st.error("Invalid weights format")
+            return
+        
+        # Check for valid weight values
+        valid_weights = {}
+        total_weight = 0
+        
+        for asset, weight in weights.items():
+            try:
+                weight_val = float(weight)
+                if 0 <= weight_val <= 1:  # Valid weight range
+                    valid_weights[asset] = weight_val
+                    total_weight += weight_val
+            except (ValueError, TypeError):
+                continue
+        
+        if not valid_weights:
+            st.error("No valid weights found in optimization result")
+            return
+        
+        # Normalize weights if needed
+        if abs(total_weight - 1.0) > 0.01:
+            st.warning(f"Weights sum to {total_weight:.3f}, normalizing to 1.0")
+            valid_weights = {k: v/total_weight for k, v in valid_weights.items()}
+        
+        # Create display DataFrame
+        weights_df = pd.DataFrame([
+            {
+                'Asset': asset, 
+                'Weight': f"{weight*100:.1f}%", 
+                'Value': weight
+            }
+            for asset, weight in valid_weights.items()
+        ]).sort_values('Value', ascending=False)
+        
+        # Display layout
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.write("**Optimized Portfolio Allocation:**")
+            st.dataframe(weights_df[['Asset', 'Weight']], hide_index=True)
+        
+        with col2:
+            # Safe pie chart creation
+            try:
+                import plotly.graph_objects as go
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=list(valid_weights.keys()),
+                    values=list(valid_weights.values()),
+                    hole=0.3
+                )])
+                fig_pie.update_layout(title="Portfolio Allocation", height=400)
+                st.plotly_chart(fig_pie, use_container_width=True)
+            except Exception as e:
+                st.write("Chart display error:", str(e))
+        
+        # Performance metrics (if available)
+        if 'expected_return' in result and result['expected_return'] is not None:
+            col1, col2, col3, col4 = st.columns(4)
+            
+            try:
+                with col1:
+                    ret_val = float(result.get('expected_return', 0))
+                    st.metric("Expected Return", f"{ret_val*100:.1f}%")
+                
+                with col2:
+                    vol_val = float(result.get('expected_volatility', 0))
+                    st.metric("Expected Volatility", f"{vol_val*100:.1f}%")
+                
+                with col3:
+                    sharpe_val = float(result.get('sharpe_ratio', 0))
+                    st.metric("Sharpe Ratio", f"{sharpe_val:.2f}")
+                
+                with col4:
+                    status_val = result.get('optimization_status', 'Unknown')
+                    st.metric("Status", status_val.title())
+            
+            except (ValueError, TypeError) as e:
+                st.warning(f"Error displaying metrics: {e}")
+        
+        st.info("💡 Portfolio has been saved to your session. Switch to other tabs for full analysis.")
+        
+    except Exception as e:
+        st.error(f"Error displaying results: {str(e)}")
+        st.write("Raw result for debugging:", result) 
+  
 def show_advanced_optimization_results(result, method_name):
     """Display advanced optimization results"""
     
@@ -344,7 +485,10 @@ def main():
     
     with tab6:
         show_enhanced_risk_management(data_loader, dashboard)
-    
+        
+        if st.checkbox("Show Debug Options"):
+            debug_risk_calculations()
+        
     with tab7:
         show_global_markets(market_data)
 
@@ -1162,56 +1306,93 @@ def show_enhanced_risk_management(data_loader, dashboard):
         return
     
     try:
+        # Get analysis data
         analysis = get_or_create_analysis(data_loader)
-        risk_metrics = analysis.get('risk_metrics', {})
         
-        if risk_metrics and 'error' not in risk_metrics:
-            # Risk metrics cards
-            col1, col2, col3 = st.columns(3)
+        # Import the fixed risk manager
+        from src.models.risk_manager import create_risk_manager
+        
+        # Create risk manager instance
+        risk_mgr = create_risk_manager(
+            risk_tolerance='moderate',
+            portfolio_value=st.session_state.portfolio_value,
+            benchmark='SPY'
+        )
+        
+        # Calculate portfolio returns from the analysis data
+        if 'portfolio_data' in analysis and not analysis['portfolio_data'].empty:
+            portfolio_data = analysis['portfolio_data']
             
-            with col1:
-                var_value = risk_metrics.get('var_1d_95', 0)
-                portfolio_value = st.session_state.portfolio_value
-                var_dollar = var_value * portfolio_value / 100000  # Adjust for portfolio size
-                st.metric("VaR (1-day, 95%)", f"${var_dollar:,.0f}")
-            
-            with col2:
-                cvar_value = risk_metrics.get('cvar_1d_95', 0)
-                cvar_dollar = cvar_value * portfolio_value / 100000
-                st.metric("CVaR (1-day, 95%)", f"${cvar_dollar:,.0f}")
-            
-            with col3:
-                max_dd = risk_metrics.get('maximum_drawdown', 0) * 100
-                st.metric("Maximum Drawdown", f"{max_dd:.1f}%")
-            
-            # Risk assessment
-            st.subheader("🎯 Risk Assessment")
-            
-            total_risk_score = min(100, abs(var_dollar) / (portfolio_value * 0.05) * 100)
-            
-            # Create risk gauge
-            risk_gauge = dashboard.create_gauge_chart(
-                total_risk_score, 
-                "Portfolio Risk Score",
-                0, 100
-            )
-            st.plotly_chart(risk_gauge, use_container_width=True)
-            
-            # Risk interpretation
-            if total_risk_score > 80:
-                st.error("🚨 High Risk: Consider reducing position sizes or increasing diversification")
-            elif total_risk_score > 60:
-                st.warning("⚠️ Moderate-High Risk: Monitor closely and consider hedging strategies")
-            elif total_risk_score > 40:
-                st.info("📊 Moderate Risk: Risk level is acceptable for growth-oriented portfolios")
+            # Calculate returns from portfolio price data
+            if 'Portfolio_Value' in portfolio_data.columns:
+                portfolio_returns = portfolio_data['Portfolio_Value'].pct_change().dropna()
             else:
-                st.success("✅ Conservative Risk: Well-diversified, low-risk portfolio")
+                # Fallback: calculate from individual asset data
+                portfolio_returns = risk_mgr.calculate_portfolio_returns_from_weights(
+                    portfolio_data, st.session_state.portfolio
+                )
+            
+            # Run comprehensive risk analysis
+            if len(portfolio_returns) > 30:  # Ensure sufficient data
+                risk_analysis = risk_mgr.comprehensive_portfolio_analysis(
+                    portfolio_returns, 
+                    portfolio_value=st.session_state.portfolio_value
+                )
+                
+                if 'error' not in risk_analysis:
+                    # Display VaR metrics
+                    var_analysis = risk_analysis.get('var_analysis', {})
+                    cvar_analysis = risk_analysis.get('cvar_analysis', {})
+                    basic_metrics = risk_analysis.get('basic_metrics', {})
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        var_dollar = var_analysis.get('var_95_dollar', 0)
+                        st.metric("VaR (1-day, 95%)", f"${var_dollar:,.0f}")
+                    
+                    with col2:
+                        cvar_dollar = cvar_analysis.get('cvar_95_dollar', 0)
+                        st.metric("CVaR (1-day, 95%)", f"${cvar_dollar:,.0f}")
+                    
+                    with col3:
+                        max_dd = basic_metrics.get('max_drawdown', 0) * 100
+                        st.metric("Maximum Drawdown", f"{max_dd:.1f}%")
+                    
+                    # Risk gauge
+                    st.subheader("🎯 Risk Assessment")
+                    risk_level = risk_analysis.get('risk_level', 'moderate')
+                    
+                    if risk_level == 'high':
+                        st.error("🚨 High Risk: Consider reducing position sizes")
+                    elif risk_level == 'moderate':
+                        st.warning("⚠️ Moderate Risk: Monitor closely")
+                    else:
+                        st.success("✅ Low Risk: Acceptable risk level")
+                    
+                    # Display recommendations
+                    recommendations = risk_analysis.get('recommendations', [])
+                    if recommendations:
+                        st.subheader("💡 Risk Management Recommendations")
+                        for rec in recommendations:
+                            st.write(f"• {rec}")
+                
+                else:
+                    st.error(f"Risk analysis failed: {risk_analysis['error']}")
+            
+            else:
+                st.error(f"Insufficient data for risk analysis: {len(portfolio_returns)} observations (need 30+)")
         
         else:
-            st.error("Risk analysis unavailable")
+            st.error("No portfolio data available for risk analysis")
     
     except Exception as e:
         st.error(f"Risk management analysis failed: {str(e)}")
+        
+        # Debug information
+        with st.expander("Debug Information"):
+            st.write("Portfolio:", st.session_state.portfolio)
+            st.write("Analysis keys:", list(analysis.keys()) if 'analysis' in locals() else "No analysis")
 
 def show_global_markets(market_data):
     
@@ -1285,6 +1466,38 @@ def show_export_options():
     if st.button("Export Data"):
         st.success(f"Data exported in {export_format} format")
         st.info("Export functionality would be implemented here")
+
+def debug_risk_calculations():
+    """Debug function to test risk calculations"""
+    
+    st.subheader("🔧 Risk Calculation Debug")
+    
+    if not st.session_state.portfolio:
+        st.warning("Configure portfolio first")
+        return
+    
+    if st.button("Run Risk Debug Analysis"):
+        try:
+            from src.models.risk_manager import debug_risk_calculation
+            from src.data.data_loader import data_loader  # Add this missing import
+            
+            # Get analysis data
+            analysis = get_or_create_analysis(data_loader)
+            
+            if 'portfolio_data' in analysis and not analysis['portfolio_data'].empty:
+                debug_results = debug_risk_calculation(
+                    analysis['portfolio_data'],
+                    st.session_state.portfolio,
+                    portfolio_value=st.session_state.portfolio_value
+                )
+                
+                st.write("Debug Results:")
+                st.json(debug_results)
+            else:
+                st.error("No portfolio data available for debugging")
+        
+        except Exception as e:
+            st.error(f"Debug failed: {str(e)}")
 
 if __name__ == "__main__":
     main()

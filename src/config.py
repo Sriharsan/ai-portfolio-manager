@@ -8,6 +8,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    
+    # Print loaded environment variables for debugging
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # Debug API key loading
+    for key in ['ALPHA_VANTAGE_API_KEY', 'FRED_API_KEY', 'OPENAI_API_KEY', 'HUGGINGFACE_API_KEY']:
+        value = os.getenv(key, '')
+        logger.info(f"{key}: {'SET' if value else 'NOT SET'} (length: {len(value)})")
+    
     # App basics
     APP_NAME = "AI Portfolio Manager"
     APP_VERSION = "1.0.0"
@@ -59,12 +70,19 @@ class Config:
     
     @classmethod 
     def get_api_status(cls):
-        return {
+        status = {
             "alpha_vantage": bool(cls.ALPHA_VANTAGE_API_KEY),
             "fred": bool(cls.FRED_API_KEY),
             "huggingface": bool(cls.HUGGINGFACE_API_KEY),
             "openai": bool(cls.OPENAI_API_KEY)
         }
+    
+        # Log status for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"API Status: {status}")
+    
+        return status
 
 # Global config instance
 config = Config()

@@ -13,26 +13,28 @@ class InstitutionalPortfolioBuilder:
         self.market_data = market_data_provider
         self.logger = logging.getLogger(__name__)
         self.templates = self._initialize_templates()
-        
-        # Import and integrate ALL advanced optimization engines
+    
         try:
-            from models.advanced_optimization import institutional_optimizer
-            from models.institutional_risk import institutional_risk_manager
-            from models.ml_engine import ml_engine
-            from analytics.backtesting import professional_backtester
-            from data.alternative_data import alternative_data_processor
-            
+            from src.models.advanced_optimization import institutional_optimizer
+            from src.models.risk_manager import create_risk_manager 
+            from src.models.ml_engine import ml_engine
+            from src.analytics.backtesting import professional_backtester
+            from src.data.alternative_data import alternative_data_processor
+        
             self.advanced_optimizer = institutional_optimizer
-            self.risk_manager = institutional_risk_manager  
+            self.risk_manager = create_risk_manager()  
             self.ml_engine = ml_engine
             self.backtester = professional_backtester
             self.alt_data = alternative_data_processor
-            
+        
             self.advanced_features_available = True
             self.logger.info("✅ ALL Advanced optimization engines loaded successfully")
-            
+        
         except ImportError as e:
             self.logger.warning(f"Advanced features unavailable: {e}")
+            # Fallback to basic risk manager
+            from .risk_manager import create_risk_manager
+            self.risk_manager = create_risk_manager()
             self.advanced_features_available = False
     
     def _initialize_templates(self) -> Dict:
@@ -307,9 +309,9 @@ class InstitutionalPortfolioBuilder:
     # =============================================================================
     # COMPREHENSIVE INSTITUTIONAL RISK ANALYSIS
     # =============================================================================
-    
+        
     def _comprehensive_risk_analysis(self, returns_data: pd.DataFrame, 
-                                   weights: Dict[str, float]) -> Dict:
+                                 weights: Dict[str, float]) -> Dict:
         """Comprehensive institutional-grade risk analysis"""
         try:
             # Calculate portfolio returns
@@ -319,42 +321,52 @@ class InstitutionalPortfolioBuilder:
                     weights.get(symbol, 0) * returns_data.loc[date, symbol]
                     for symbol in returns_data.columns
                     if not pd.isna(returns_data.loc[date, symbol])
-                )
+                )   
                 portfolio_returns.append(daily_return)
-            
+
             portfolio_returns_series = pd.Series(portfolio_returns, index=returns_data.index)
-            
-            # Monte Carlo VaR analysis (10,000+ simulations)
-            mc_var = self.risk_manager.monte_carlo_var(
-                portfolio_returns_series, 
-                portfolio_value=1000000,
-                simulations=10000
-            )
-            
-            # GARCH volatility forecasting
-            garch_forecast = self.risk_manager.garch_volatility_forecast(
-                portfolio_returns_series, horizon=22
-            )
-            
-            # 5 comprehensive stress test scenarios
-            stress_results = self.risk_manager.stress_test_scenarios(
-                weights, returns_data, portfolio_value=1000000
-            )
-            
-            # Dynamic correlation breakdown analysis
-            correlation_analysis = self.risk_manager.correlation_breakdown_analysis(returns_data)
-            
-            return {
-                'monte_carlo_var': mc_var,
-                'garch_volatility': garch_forecast,
-                'stress_tests': stress_results,
-                'correlation_analysis': correlation_analysis,
-                'analysis_timestamp': pd.Timestamp.now()
+
+            # === Institutional Risk Manager Calls ===
+            try:
+                institutional_var = self.risk_manager.monte_carlo_var(portfolio_returns_series)
+            except Exception as e:
+                self.logger.warning(f"Monte Carlo VaR failed: {e}")
+                institutional_var = {}
+
+            try:
+                garch_forecast = self.risk_manager.garch_volatility_forecast(portfolio_returns_series)
+            except Exception as e:
+                self.logger.warning(f"GARCH volatility forecast failed: {e}")
+                garch_forecast = {}
+
+            try:
+                stress_test = self.risk_manager.stress_test_scenarios(weights, returns_data)
+            except Exception as e:
+                self.logger.warning(f"Stress test failed: {e}")
+                stress_test = {}
+
+            try:
+                corr_analysis = self.risk_manager.correlation_breakdown_analysis(returns_data)
+            except Exception as e:
+                self.logger.warning(f"Correlation breakdown failed: {e}")
+                corr_analysis = {}
+
+            # === Build Risk Report ===
+            risk_report = {
+                "VaR (1-day, 95%)": institutional_var.get("var_95", 0),
+                "CVaR (1-day, 95%)": institutional_var.get("cvar_95", 0),
+                "Maximum Drawdown": self.risk_manager.max_drawdown(portfolio_returns_series),
+                "GARCH Forecast": garch_forecast,
+                "Stress Test": stress_test,
+                "Correlation Breakdown": corr_analysis
             }
-            
+
+            return risk_report
+
         except Exception as e:
             self.logger.error(f"Risk analysis failed: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}
+
     
     # =============================================================================
     # ALTERNATIVE DATA INTEGRATION
@@ -646,25 +658,29 @@ class InstitutionalPortfolioBuilder:
     def _get_returns_matrix(self, symbols: List[str], period: str = '1y') -> pd.DataFrame:
         """Get aligned returns matrix for optimization"""
         returns_dict = {}
-        
+
         for symbol in symbols:
             try:
                 data = self.market_data.get_stock_data(symbol, period)
                 if not data.empty and 'Daily_Return' in data.columns:
                     returns = data['Daily_Return'].dropna()
                     if len(returns) > 50:  # Minimum data requirement
+                        # Ensure timezone-naive index
+                        returns.index = returns.index.tz_localize(None)
                         returns_dict[symbol] = returns
             except Exception as e:
                 self.logger.warning(f"Failed to get data for {symbol}: {e}")
-        
+
         if not returns_dict:
             return pd.DataFrame()
-        
+
         # Create aligned returns matrix
         returns_df = pd.DataFrame(returns_dict)
+        returns_df.index = returns_df.index.tz_localize(None)  # enforce tz-naive
         returns_df = returns_df.dropna()
-        
+
         return returns_df
+
     
     def _find_substitute(self, symbol: str, available_assets: List[str]) -> Optional[str]:
         """Find substitute for unavailable asset"""

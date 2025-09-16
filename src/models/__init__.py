@@ -1,5 +1,5 @@
 from .portfolio_optimizer import InstitutionalPortfolioBuilder
-from .risk_manager import risk_manager
+from .risk_manager import create_risk_manager
 from .llm_engine import llm_engine
 
 # Safe imports for new modules

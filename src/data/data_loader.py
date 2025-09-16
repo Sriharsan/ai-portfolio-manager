@@ -6,10 +6,11 @@ import logging
 from datetime import datetime
 
 from .market_data import market_data_provider
-from models.llm_engine import llm_engine
-from analytics.performance import performance_analyzer
-from models.risk_manager import risk_manager
-from models.portfolio_optimizer import InstitutionalPortfolioBuilder
+from ..models.llm_engine import llm_engine
+from ..analytics.performance import performance_analyzer
+from ..models.risk_manager import create_risk_manager
+risk_manager = create_risk_manager(risk_tolerance='moderate', portfolio_value=1000000)
+from ..models.portfolio_optimizer import InstitutionalPortfolioBuilder
 
 class DataLoader:
     
@@ -33,7 +34,7 @@ class DataLoader:
             performance_metrics = performance_analyzer.calculate_metrics(returns_series)
             
             # Risk metrics
-            risk_metrics = risk_manager.portfolio_risk_metrics(returns_series)
+            risk_metrics = risk_manager.comprehensive_portfolio_analysis(returns_series)
             
             # Optimization recommendations
             returns_df = pd.DataFrame({
@@ -78,7 +79,7 @@ class DataLoader:
             ai_insight = llm_engine.generate_market_insight(stock_data, symbol)
             
             # Risk assessment
-            risk_assessment = risk_manager.portfolio_risk_metrics(returns)
+            risk_assessment = risk_manager.comprehensive_portfolio_analysis(returns)
             
             return {
                 'stock_data': stock_data,
